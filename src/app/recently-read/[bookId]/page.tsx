@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -34,6 +35,7 @@ interface Entry {
 
 
 export default function RecentlyReadBookPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const bookId = parseInt(params.bookId as string, 10);
@@ -59,8 +61,8 @@ export default function RecentlyReadBookPage() {
           setEntry(null); // Book not found
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Error fetching entry:', err);
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorFetchingEntry'), err);
       } finally {
         setLoading(false);
       }
@@ -88,12 +90,12 @@ export default function RecentlyReadBookPage() {
       // Navigate back to the recently read list after successful deletion
       router.push('/recently-read');
 
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error deleting book:', err);
-      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
-    }
-  };
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorDeletingBook'), err);
+        alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      }
+    };
 
 
   if (loading) {
@@ -127,17 +129,17 @@ export default function RecentlyReadBookPage() {
   }
 
   if (error) {
-    return <div className="container mx-auto py-8 px-4 text-red-500">Error: {error}</div>;
+    return <div className="container mx-auto py-8 px-4 text-red-500">{t('error')}: {error}</div>;
   }
 
   if (!entry) {
-    return <div className="container mx-auto py-8 px-4">Book not found</div>;
+    return <div className="container mx-auto py-8 px-4">{t('bookNotFound')}</div>;
   }
 
   return (
     <div className="container mx-auto py-8 px-4">
       <Breadcrumb itemName={entry?.title} /> {/* Add Breadcrumb component and pass item name */}
-      <h1 className="text-2xl font-semibold mb-8">Book Details</h1>
+      <h1 className="text-2xl font-semibold mb-8">{t('bookDetails')}</h1>
 
       <Card className="border-none shadow-md py-6">
         <CardHeader>
@@ -145,10 +147,10 @@ export default function RecentlyReadBookPage() {
           <p className="text-sm text-gray-600">{entry.author}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p><strong>Recommended:</strong> {entry.recommended ? 'Yes' : 'No'}</p>
+          <p><strong>{t('recommended')}:</strong> {entry.recommended ? t('yes') : t('no')}</p>
           {entry.rating !== null && (
             <div className="flex items-center">
-              <strong className="mr-2">Overall Rating:</strong>
+              <strong className="mr-2">{t('overallRating')}:</strong>
               {Array.from({ length: 5 }, (_, i) => (
                 <span key={i} className={`text-yellow-500 ${i < (entry.rating || 0) ? 'fill-current' : ''}`}>
                   {i < (entry.rating || 0) ? '★' : '☆'}
@@ -156,18 +158,18 @@ export default function RecentlyReadBookPage() {
               ))}
             </div>
           )}
-          {entry.formato && <p><strong>Format:</strong> {entry.formato}</p>}
-          {entry.page_number !== null && <p><strong>Page Number:</strong> {entry.page_number}</p>}
-          {entry.start_date && <p><strong>Start Date:</strong> {entry.start_date}</p>}
-          {entry.end_date && <p><strong>End Date:</strong> {entry.end_date}</p>}
-          {entry.fav_character && <p><strong>Favorite Character:</strong> {entry.fav_character}</p>}
-          {entry.hated_character && <p><strong>Hated Character:</strong> {entry.hated_character}</p>}
+          {entry.formato && <p><strong>{t('format')}:</strong> {entry.formato}</p>}
+          {entry.page_number !== null && <p><strong>{t('pageNumber')}:</strong> {entry.page_number}</p>}
+          {entry.start_date && <p><strong>{t('startDate')}:</strong> {entry.start_date}</p>}
+          {entry.end_date && <p><strong>{t('endDate')}:</strong> {entry.end_date}</p>}
+          {entry.fav_character && <p><strong>{t('favoriteCharacter')}:</strong> {entry.fav_character}</p>}
+          {entry.hated_character && <p><strong>{t('hatedCharacter')}:</strong> {entry.hated_character}</p>}
           {entry.rating_details && (
             <div>
-              <strong>Detailed Ratings:</strong>
+              <strong>{t('detailedRatings')}:</strong>
               <div className="space-y-2 mt-2">
                 <div className="flex items-center">
-                  <strong className="w-24">Romance:</strong>
+                  <strong className="w-24">{t('romance')}:</strong>
                   {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={`text-red-500 ${i < (entry.rating_details?.romance || 0) ? 'fill-current' : ''}`}>
                     {i < (entry.rating_details?.romance || 0) ? '❤️' : '🤍'}
@@ -175,7 +177,7 @@ export default function RecentlyReadBookPage() {
                   ))}
                 </div>
                 <div className="flex items-center">
-                  <strong className="w-24">Sadness:</strong>
+                  <strong className="w-24">{t('sadness')}:</strong>
                   {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={`text-blue-500 ${i < (entry.rating_details?.sadness || 0) ? 'fill-current' : ''}`}>
                     {i < (entry.rating_details?.sadness || 0) ? '💧' : '◦'} {/* Using '◦' for empty tear drop */}
@@ -183,7 +185,7 @@ export default function RecentlyReadBookPage() {
                   ))}
                 </div>
                 <div className="flex items-center">
-                  <strong className="w-24">Spicy:</strong>
+                  <strong className="w-24">{t('spicy')}:</strong>
                   {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={`text-orange-500 ${i < (entry.rating_details?.spicy || 0) ? 'fill-current' : ''}`}>
                     {i < (entry.rating_details?.spicy || 0) ? '🌶️' : '◦'} {/* Using '◦' for empty chili */}
@@ -191,7 +193,7 @@ export default function RecentlyReadBookPage() {
                   ))}
                 </div>
                 <div className="flex items-center">
-                  <strong className="w-24">Final:</strong>
+                  <strong className="w-24">{t('final')}:</strong>
                   {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={`text-green-500 ${i < (entry.rating_details?.final || 0) ? 'fill-current' : ''}`}>
                     {i < (entry.rating_details?.final || 0) ? '✅' : '◦'} {/* Using '◦' for empty checkmark */}
@@ -201,25 +203,25 @@ export default function RecentlyReadBookPage() {
               </div>
             </div>
           )}
-          {entry.genre && <p><strong>Genre:</strong> {entry.genre}</p>}
+          {entry.genre && <p><strong>{t('genre')}:</strong> {entry.genre}</p>}
           {entry.fav_phrases && entry.fav_phrases.length > 0 && (
             <div>
-              <strong>Favorite Phrases:</strong>
+              <strong>{t('favoritePhrases')}:</strong>
               <ul className="list-disc list-inside">
                 {entry.fav_phrases.map((phrase, index) => <li key={index}>{phrase}</li>)}
               </ul>
             </div>
           )}
-          {entry.review && <p><strong>Review:</strong> {entry.review}</p>}
+          {entry.review && <p><strong>{t('review')}:</strong> {entry.review}</p>}
         </CardContent>
       </Card>
 
       <div className="mt-8 flex justify-between">
         <Link href="/recently-read">
-          <Button variant="outline">Back to Recently Read</Button>
+          <Button variant="outline">{t('backToRecentlyRead')}</Button>
         </Link>
         <Button variant="destructive" onClick={handleDeleteBook}>
-          Delete
+          {t('delete')}
         </Button>
       </div>
     </div>

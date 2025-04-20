@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
+import { useTranslation } from "@/translations/TranslationContext";
 import { Card, CardContent } from "@/components/ui/card";
+import LanguageSwitcher from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -37,6 +39,7 @@ interface WishlistItem {
 }
 
 export default function Home() {
+  const { t } = useTranslation();
   const [recentlyReadBooks, setRecentlyReadBooks] = useState<Entry[]>([]);
   const [wishlistBooks, setWishlistBooks] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +82,12 @@ export default function Home() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-semibold mb-8">Hi, Patricia 👋</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold">{t('greeting')}</h1>
+        <LanguageSwitcher />
+      </div>
 
-      {error && <p className="text-red-500">Error: {error}</p>}
+      {error && <p className="text-red-500">{t('error')}: {error}</p>}
 
       {loading && (
         <div className="flex flex-col gap-8">
@@ -128,9 +134,9 @@ export default function Home() {
         <div className="flex flex-col gap-8">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Recently Read</h2>
+              <h2 className="text-xl font-semibold">{t('recentlyRead')}</h2>
               <Link href="/recently-read">
-                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">View All</Button>
+                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">{t('viewAll')}</Button>
               </Link>
             </div>
             <div className="flex flex-col gap-4">
@@ -159,9 +165,9 @@ export default function Home() {
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Wishlist</h2>
+              <h2 className="text-xl font-semibold">{t('wishlist')}</h2>
               <Link href="/wishlist">
-                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">View All</Button>
+                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">{t('viewAll')}</Button>
               </Link>
             </div>
             <div className="flex flex-col gap-4">

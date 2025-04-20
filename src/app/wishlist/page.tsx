@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ interface WishlistBook {
 }
 
 export default function WishlistPage() {
+  const { t } = useTranslation();
   const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<Omit<WishlistBook, 'id'>>({
@@ -60,7 +62,7 @@ export default function WishlistPage() {
   const handleAddBook = async () => {
     // Basic validation
     if (!newBook.title || !newBook.author) {
-      alert("Title and Author are required.");
+      alert(t('titleAuthorRequired'));
       return;
     }
 
@@ -88,9 +90,9 @@ export default function WishlistPage() {
         note: "",
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error adding wishlist item:', err);
-      alert(`Failed to add book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+      setError(err instanceof Error ? err.message : t('unknownError'));
+      console.error(t('errorAddingWishlistItem'), err);
+      alert(`${t('failedToAddBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
     }
   };
 
@@ -112,9 +114,9 @@ export default function WishlistPage() {
       setWishlistBooks(wishlistBooks.filter(item => item.id !== id));
 
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error deleting wishlist item:', err);
-      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+      setError(err instanceof Error ? err.message : t('unknownError'));
+      console.error(t('errorDeletingWishlistItem'), err);
+      alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
     }
   };
 
@@ -122,31 +124,31 @@ export default function WishlistPage() {
     <div className="container mx-auto py-8 px-4">
       <Breadcrumb /> {/* Add Breadcrumb component */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">All Wishlist Books</h1>
+        <h1 className="text-2xl font-semibold">{t('allWishlistBooks')}</h1>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : 'Add New Book'}
+          {showForm ? t('cancel') : t('addNewBook')}
         </Button>
       </div>
 
       {showForm && (
         <Card className="mb-8 p-4">
           <CardContent>
-            <h2 className="text-xl font-semibold mb-4">Add New Wishlist Book</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('addNewWishlistBook')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title" className="mb-1">Title</Label>
+                <Label htmlFor="title" className="mb-1">{t('title')}</Label>
                 <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="author" className="mb-1">Author</Label>
+                <Label htmlFor="author" className="mb-1">{t('author')}</Label>
                 <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
               </div>
               <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="note" className="mb-1">Note</Label>
+                <Label htmlFor="note" className="mb-1">{t('note')}</Label>
                 <Textarea id="note" name="note" value={newBook.note} onChange={handleInputChange} />
               </div>
             </div>
-            <Button onClick={handleAddBook} className="mt-4">Add Book</Button>
+            <Button onClick={handleAddBook} className="mt-4">{t('addBook')}</Button>
           </CardContent>
         </Card>
       )}
@@ -164,7 +166,7 @@ export default function WishlistPage() {
           ))}
         </div>
       )}
-      {error && <p className="text-red-500">Error: {error}</p>}
+      {error && <p className="text-red-500">{t('error')}: {error}</p>}
 
           {!loading && !error && (
             <div className="flex flex-col gap-4">
@@ -174,7 +176,7 @@ export default function WishlistPage() {
                     <CardContent className="p-4 pr-10"> {/* Added right padding to make space for button */}
                       <h3 className="text-lg font-semibold">{book.title}</h3>
                       <p className="text-sm text-gray-600">{book.author}</p>
-                      {book.note && <p className="text-sm text-gray-500 mt-2">{book.note}</p>}
+                      {book.note && <p className="text-sm text-gray-500 mt-2">{t('note')}: {book.note}</p>}
                     </CardContent>
                   </Link>
                   <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(book.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Changed variant, added cursor-pointer */}
@@ -187,7 +189,7 @@ export default function WishlistPage() {
 
       <div className="mt-8">
         <Link href="/">
-          <Button variant="outline">Back to Home</Button>
+          <Button variant="outline">{t('backToHome')}</Button>
         </Link>
       </div>
     </div>

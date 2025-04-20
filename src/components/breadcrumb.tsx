@@ -2,22 +2,26 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslation } from "@/translations/TranslationContext";
 
 interface BreadcrumbProps {
   itemName?: string; // Optional prop for the name of the current item
 }
 
 export default function Breadcrumb({ itemName }: BreadcrumbProps) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const pathSegments = pathname.split('/').filter(segment => segment !== '');
 
   return (
     <nav className="mb-4 text-sm text-gray-600">
-      <Link href="/" className="hover:underline">Home</Link>
+      <Link href="/" className="hover:underline">{t('home')}</Link>
       {pathSegments.map((segment, index) => {
         const href = '/' + pathSegments.slice(0, index + 1).join('/');
         const isLast = index === pathSegments.length - 1;
-        const displayName = segment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Basic formatting
+        // Use segment as key for translation
+        const translatedSegment = t(segment);
+        const displayName = translatedSegment === segment ? segment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : translatedSegment; // Basic formatting or translated text
 
         return (
           <span key={href}>

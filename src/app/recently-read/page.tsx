@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +62,7 @@ interface NewBookState {
 
 
 export default function RecentlyReadPage() {
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<NewBookState>({
@@ -126,7 +128,7 @@ export default function RecentlyReadPage() {
   const handleAddBook = async () => {
     // Basic validation
     if (!newBook.title || !newBook.author) {
-      alert("Title and Author are required.");
+      alert(t('titleAuthorRequired'));
       return;
     }
 
@@ -164,12 +166,12 @@ export default function RecentlyReadPage() {
         favPhrases: [],
         review: ""
       });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error adding entry:', err);
-      alert(`Failed to add book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
-    }
-  };
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorAddingEntry'), err);
+        alert(`${t('failedToAddBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      }
+    };
 
   const handleDeleteEntry = async (id: number) => {
     try {
@@ -188,38 +190,38 @@ export default function RecentlyReadPage() {
       // Update state by removing the deleted entry
       setEntries(entries.filter(entry => entry.id !== id));
 
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error deleting entry:', err);
-      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
-    }
-  };
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorDeletingEntry'), err);
+        alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      }
+    };
 
   return (
     <div className="container mx-auto py-8 px-4">
       <Breadcrumb /> {/* Add Breadcrumb component */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">All Recently Read Books</h1>
+        <h1 className="text-2xl font-semibold">{t('allRecentlyReadBooks')}</h1>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : 'Add New Book'}
+          {showForm ? t('cancel') : t('addNewBook')}
         </Button>
       </div>
 
       {showForm && (
         <Card className="mb-8 p-4">
           <CardContent>
-            <h2 className="text-xl font-semibold mb-4">Add New Recently Read Book</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('addNewRecentlyReadBook')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title" className="mb-1">Title</Label>
+                <Label htmlFor="title" className="mb-1">{t('title')}</Label>
                 <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="author" className="mb-1">Author</Label>
+                <Label htmlFor="author" className="mb-1">{t('author')}</Label>
                 <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="recommended" className="mb-1">Recommended</Label>
+                <Label htmlFor="recommended" className="mb-1">{t('recommended')}</Label>
                 <input
                   type="checkbox"
                   id="recommended"
@@ -230,48 +232,48 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="rating" className="mb-1">Overall Rating</Label>
+                <Label htmlFor="rating" className="mb-1">{t('overallRating')}</Label>
                 <Input type="number" id="rating" name="rating" value={newBook.rating} onChange={handleInputChange} min="0" max="5" />
               </div>
               <div>
-                <Label htmlFor="formato" className="mb-1">Format</Label>
+                <Label htmlFor="formato" className="mb-1">{t('format')}</Label>
                 <Select onValueChange={(value) => handleSelectChange("formato", value)} value={newBook.formato}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select format" />
+                    <SelectValue placeholder={t('selectFormat')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="digital">Digital</SelectItem>
-                    <SelectItem value="physical">Physical</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
+                    <SelectItem value="digital">{t('digital')}</SelectItem>
+                    <SelectItem value="physical">{t('physical')}</SelectItem>
+                    <SelectItem value="both">{t('both')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="pageNumber" className="mb-1">Page Number</Label>
+                <Label htmlFor="pageNumber" className="mb-1">{t('pageNumber')}</Label>
                 <Input type="number" id="pageNumber" name="pageNumber" value={newBook.pageNumber} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="startDate" className="mb-1">Start Date</Label>
+                <Label htmlFor="startDate" className="mb-1">{t('startDate')}</Label>
                 <Input type="date" id="startDate" name="startDate" value={newBook.startDate} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="endDate" className="mb-1">End Date</Label>
+                <Label htmlFor="endDate" className="mb-1">{t('endDate')}</Label>
                 <Input type="date" id="endDate" name="endDate" value={newBook.endDate} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="favCharacter" className="mb-1">Favorite Character</Label>
+                <Label htmlFor="favCharacter" className="mb-1">{t('favoriteCharacter')}</Label>
                 <Input id="favCharacter" name="favCharacter" value={newBook.favCharacter} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="hatedCharacter" className="mb-1">Hated Character</Label>
+                <Label htmlFor="hatedCharacter" className="mb-1">{t('hatedCharacter')}</Label>
                 <Input id="hatedCharacter" name="hatedCharacter" value={newBook.hatedCharacter} onChange={handleInputChange} />
               </div>
               <div>
-                <Label htmlFor="genre" className="mb-1">Genre</Label>
+                <Label htmlFor="genre" className="mb-1">{t('genre')}</Label>
                 <Input id="genre" name="genre" value={newBook.genre} onChange={handleInputChange} />
               </div>
               <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="favPhrases" className="mb-1">Favorite Phrases (comma-separated)</Label>
+                <Label htmlFor="favPhrases" className="mb-1">{t('favoritePhrases')}</Label>
                 <Input
                   id="favPhrases"
                   name="favPhrases"
@@ -280,32 +282,32 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="review" className="mb-1">Review</Label>
+                <Label htmlFor="review" className="mb-1">{t('review')}</Label>
                 <Textarea id="review" name="review" value={newBook.review} onChange={handleInputChange} />
               </div>
               <div className="col-span-1 md:col-span-2">
-                <h3 className="text-lg font-semibold mb-2">Detailed Ratings</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('detailedRatings')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="rating-romance" className="mb-1">Romance</Label>
+                    <Label htmlFor="rating-romance" className="mb-1">{t('romance')}</Label>
                     <Input type="number" id="rating-romance" name="romance" value={newBook.ratingDetails.romance} onChange={(e) => handleRatingChange('romance', e.target.value)} min="0" max="5" />
                   </div>
                   <div>
-                    <Label htmlFor="rating-sadness" className="mb-1">Sadness</Label>
+                    <Label htmlFor="rating-sadness" className="mb-1">{t('sadness')}</Label>
                     <Input type="number" id="rating-sadness" name="sadness" value={newBook.ratingDetails.sadness} onChange={(e) => handleRatingChange('sadness', e.target.value)} min="0" max="5" />
                   </div>
                   <div>
-                    <Label htmlFor="rating-spicy" className="mb-1">Spicy</Label>
+                    <Label htmlFor="rating-spicy" className="mb-1">{t('spicy')}</Label>
                     <Input type="number" id="rating-spicy" name="spicy" value={newBook.ratingDetails.spicy} onChange={(e) => handleRatingChange('spicy', e.target.value)} min="0" max="5" />
                   </div>
                   <div>
-                    <Label htmlFor="rating-final" className="mb-1">Final</Label>
+                    <Label htmlFor="rating-final" className="mb-1">{t('final')}</Label>
                     <Input type="number" id="rating-final" name="final" value={newBook.ratingDetails.final} onChange={(e) => handleRatingChange('final', e.target.value)} min="0" max="5" />
                   </div>
                 </div>
               </div>
             </div>
-            <Button onClick={handleAddBook} className="mt-4">Add Book</Button>
+            <Button onClick={handleAddBook} className="mt-4">{t('addBook')}</Button>
           </CardContent>
         </Card>
       )}
@@ -323,7 +325,7 @@ export default function RecentlyReadPage() {
           ))}
         </div>
       )}
-      {error && <p className="text-red-500">Error: {error}</p>}
+      {error && <p className="text-red-500">{t('error')}: {error}</p>}
 
           {!loading && !error && (
             <div className="flex flex-col gap-4">
@@ -357,7 +359,7 @@ export default function RecentlyReadPage() {
 
       <div className="mt-8">
         <Link href="/">
-          <Button variant="outline">Back to Home</Button>
+          <Button variant="outline">{t('backToHome')}</Button>
         </Link>
       </div>
     </div>

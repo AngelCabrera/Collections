@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from "@/translations/TranslationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,7 @@ interface WishlistItem {
 }
 
 export default function WishlistItemPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const itemId = parseInt(params.itemId as string, 10);
@@ -42,8 +44,8 @@ export default function WishlistItemPage() {
           setItem(null); // Item not found
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Error fetching wishlist item:', err);
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorFetchingWishlistItem'), err);
       } finally {
         setLoading(false);
       }
@@ -71,10 +73,10 @@ export default function WishlistItemPage() {
       // Navigate back to the wishlist after successful deletion
       router.push('/wishlist');
 
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error deleting wishlist item:', err);
-      alert(`Failed to delete item: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorDeletingWishlistItem'), err);
+        alert(`${t('failedToDeleteItem')}: ${err instanceof Error ? err.message : t('unknownError')}`);
     }
   };
 
@@ -101,17 +103,17 @@ export default function WishlistItemPage() {
   }
 
   if (error) {
-    return <div className="container mx-auto py-8 px-4 text-red-500">Error: {error}</div>;
+    return <div className="container mx-auto py-8 px-4 text-red-500">{t('error')}: {error}</div>;
   }
 
   if (!item) {
-    return <div className="container mx-auto py-8 px-4">Wishlist item not found</div>;
+    return <div className="container mx-auto py-8 px-4">{t('wishlistItemNotFound')}</div>;
   }
 
   return (
     <div className="container mx-auto py-8 px-4">
       <Breadcrumb itemName={item?.title} /> {/* Add Breadcrumb component and pass item name */}
-      <h1 className="text-2xl font-semibold mb-8">Wishlist Item Details</h1>
+      <h1 className="text-2xl font-semibold mb-8">{t('wishlistItemDetails')}</h1>
 
       <Card className="border-none shadow-md py-6">
         <CardHeader>
@@ -119,16 +121,16 @@ export default function WishlistItemPage() {
           <p className="text-sm text-gray-600">{item.author}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {item.note && <p><strong>Note:</strong> {item.note}</p>}
+          {item.note && <p><strong>{t('note')}:</strong> {item.note}</p>}
         </CardContent>
       </Card>
 
       <div className="mt-8 flex justify-between">
         <Link href="/wishlist">
-          <Button variant="outline">Back to Wishlist</Button>
+          <Button variant="outline">{t('backToWishlist')}</Button>
         </Link>
         <Button variant="destructive" onClick={handleDeleteItem}>
-          Delete
+          {t('delete')}
         </Button>
       </div>
     </div>
