@@ -1,103 +1,123 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// Placeholder data
+const recentlyReadBooks = [
+  {
+    id: 1,
+    title: "Book 1",
+    author: "Author 1",
+    recommended: true,
+    rating: 5,
+    formato: "digital",
+    pageNumber: 300,
+    startDate: "2023-01-01",
+    endDate: "2023-01-15",
+    favCharacter: "Character A",
+    hatedCharacter: "Character B",
+    ratingDetails: { romance: 4, sadness: 2, spicy: 1, final: 5 },
+    genre: "Fiction",
+    favPhrases: ["Phrase 1", "Phrase 2"],
+    review: "Great book!"
+  },
+  {
+    id: 2,
+    title: "Book 2",
+    author: "Author 2",
+    recommended: false,
+    rating: 4,
+    formato: "physical",
+    pageNumber: 450,
+    startDate: "2023-02-01",
+    endDate: "2023-02-20",
+    favCharacter: "Character C",
+    hatedCharacter: "Character D",
+    ratingDetails: { romance: 1, sadness: 5, spicy: 0, final: 4 },
+    genre: "Drama",
+    favPhrases: ["Phrase 3"],
+    review: "Enjoyed it."
+  },
+  {
+    id: 3,
+    title: "Book 3",
+    author: "Author 3",
+    recommended: true,
+    rating: 3,
+    formato: "both",
+    pageNumber: 250,
+    startDate: "2023-03-01",
+    endDate: "2023-03-10",
+    favCharacter: "Character E",
+    hatedCharacter: "Character F",
+    ratingDetails: { romance: 3, sadness: 3, spicy: 3, final: 3 },
+    genre: "Fantasy",
+    favPhrases: [],
+    review: "Okay read."
+  },
+];
+
+const wishlistBooks = [
+  { id: 1, title: "Wishlist Book 1", author: "Wishlist Author 1", note: "Heard good things." },
+  { id: 2, title: "Wishlist Book 2", author: "Wishlist Author 2", note: "Recommended by a friend." },
+  { id: 3, title: "Wishlist Book 3", author: "Wishlist Author 3", note: "Looks interesting." },
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-semibold mb-8">Hi, John Doe 👋</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="flex flex-col gap-8">
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Recently Read</h2>
+            <Link href="/recently-read">
+              <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">View All</Button>
+            </Link>
+          </div>
+          <div className="flex flex-col gap-4">
+            {recentlyReadBooks.slice(0, 3).map((book) => (
+              <Link key={book.id} href={`/recently-read/${book.id}`} passHref>
+                <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer">
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold">{book.title}</h3>
+                    <p className="text-sm text-gray-600">{book.author}</p>
+                    <div className="flex items-center">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <span key={i} className={`text-yellow-500 ${i < book.rating ? 'fill-current' : ''}`}>
+                          {i < book.rating ? '★' : '☆'}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">{book.review}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Wishlist</h2>
+            <Link href="/wishlist">
+              <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">View All</Button>
+            </Link>
+          </div>
+          <div className="flex flex-col gap-4">
+            {wishlistBooks.slice(0, 3).map((book) => (
+              <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100">
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-semibold">{book.title}</h3>
+                  <p className="text-sm text-gray-600">{book.author}</p>
+                  <p className="text-sm text-gray-500 mt-2">{book.note}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
