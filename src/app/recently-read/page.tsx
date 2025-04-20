@@ -1,17 +1,43 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { FaTrash } from 'react-icons/fa'; // Import the trash icon
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 
-// Define interface for book data
-interface Book {
+// Define interface for entry data (matching the 'entries' table structure)
+interface Entry {
   id: number;
+  title: string;
+  author: string;
+  recommended: boolean | null;
+  rating: number | null;
+  formato: string | null;
+  page_number: number | null; // Note: snake_case from DB
+  start_date: string | null; // Note: snake_case from DB
+  end_date: string | null;   // Note: snake_case from DB
+  fav_character: string | null; // Note: snake_case from DB
+  hated_character: string | null; // Note: snake_case from DB
+  rating_details: { // JSONB column
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  } | null;
+  genre: string | null;
+  fav_phrases: string[] | null; // JSONB column
+  review: string | null;
+}
+
+// Define interface for the new book state (camelCase for frontend form)
+interface NewBookState {
   title: string;
   author: string;
   recommended: boolean;
@@ -33,100 +59,11 @@ interface Book {
   review: string;
 }
 
-// Placeholder data (should ideally be fetched from an API or context in a real app)
-const initialRecentlyReadBooks: Book[] = [
-  {
-    id: 1,
-    title: "Book 1",
-    author: "Author 1",
-    recommended: true,
-    rating: 5,
-    formato: "digital",
-    pageNumber: 300,
-    startDate: "2023-01-01",
-    endDate: "2023-01-15",
-    favCharacter: "Character A",
-    hatedCharacter: "Character B",
-    ratingDetails: { romance: 4, sadness: 2, spicy: 1, final: 5 },
-    genre: "Fiction",
-    favPhrases: ["Phrase 1", "Phrase 2"],
-    review: "Great book!"
-  },
-  {
-    id: 2,
-    title: "Book 2",
-    author: "Author 2",
-    recommended: false,
-    rating: 4,
-    formato: "physical",
-    pageNumber: 450,
-    startDate: "2023-02-01",
-    endDate: "2023-02-20",
-    favCharacter: "Character C",
-    hatedCharacter: "Character D",
-    ratingDetails: { romance: 1, sadness: 5, spicy: 0, final: 4 },
-    genre: "Drama",
-    favPhrases: ["Phrase 3"],
-    review: "Enjoyed it."
-  },
-  {
-    id: 3,
-    title: "Book 3",
-    author: "Author 3",
-    recommended: true,
-    rating: 3,
-    formato: "both",
-    pageNumber: 250,
-    startDate: "2023-03-01",
-    endDate: "2023-03-10",
-    favCharacter: "Character E",
-    hatedCharacter: "Character F",
-    ratingDetails: { romance: 3, sadness: 3, spicy: 3, final: 3 },
-    genre: "Fantasy",
-    favPhrases: [],
-    review: "Okay read."
-  },
-  {
-    id: 4,
-    title: "Book 4",
-    author: "Author 4",
-    recommended: false,
-    rating: 4,
-    formato: "digital",
-    pageNumber: 350,
-    startDate: "2023-04-01",
-    endDate: "2023-04-18",
-    favCharacter: "Character G",
-    hatedCharacter: "Character H",
-    ratingDetails: { romance: 2, sadness: 4, spicy: 1, final: 4 },
-    genre: "Mystery",
-    favPhrases: ["Phrase 4"],
-    review: "Good read."
-  },
-  {
-    id: 5,
-    title: "Book 5",
-    author: "Author 5",
-    recommended: true,
-    rating: 5,
-    formato: "physical",
-    pageNumber: 500,
-    startDate: "2023-05-01",
-    endDate: "2023-05-25",
-    favCharacter: "Character I",
-    hatedCharacter: "Character J",
-    ratingDetails: { romance: 5, sadness: 1, spicy: 4, final: 5 },
-    genre: "Romance",
-    favPhrases: ["Phrase 5", "Phrase 6"],
-    review: "Loved it!"
-  },
-];
-
 
 export default function RecentlyReadPage() {
-  const [recentlyReadBooks, setRecentlyReadBooks] = useState<Book[]>(initialRecentlyReadBooks);
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [newBook, setNewBook] = useState<Omit<Book, 'id'>>({
+  const [newBook, setNewBook] = useState<NewBookState>({
     title: "",
     author: "",
     recommended: false,
@@ -142,13 +79,37 @@ export default function RecentlyReadPage() {
     favPhrases: [],
     review: ""
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEntries = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/entries');
+      if (!response.ok) {
+        throw new Error(`Error fetching entries: ${response.statusText}`);
+      }
+      const data: Entry[] = await response.json();
+      setEntries(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error fetching entries:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntries();
+  }, []); // Fetch entries on component mount
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewBook({ ...newBook, [name]: value });
+    setNewBook({ ...newBook, [name as keyof NewBookState]: value });
   };
 
-  const handleRatingChange = (type: keyof typeof newBook.ratingDetails, value: string) => {
+  const handleRatingChange = (type: keyof NewBookState['ratingDetails'], value: string) => {
     setNewBook({
       ...newBook,
       ratingDetails: {
@@ -158,47 +119,85 @@ export default function RecentlyReadPage() {
     });
   };
 
-  const handleSelectChange = (name: keyof Omit<Book, 'id'>, value: string) => {
+  const handleSelectChange = (name: keyof NewBookState, value: string) => {
     setNewBook({ ...newBook, [name]: value });
   };
 
-  const handleAddBook = () => {
+  const handleAddBook = async () => {
     // Basic validation
     if (!newBook.title || !newBook.author) {
       alert("Title and Author are required.");
       return;
     }
 
-    const bookToAdd: Book = {
-      ...newBook,
-      id: recentlyReadBooks.length + 1, // Simple ID generation
-      rating: parseInt(newBook.rating.toString(), 10) || 0, // Ensure rating is a number
-      pageNumber: parseInt(newBook.pageNumber.toString(), 10) || 0, // Ensure pageNumber is a number
-    };
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBook),
+      });
 
-    setRecentlyReadBooks([...recentlyReadBooks, bookToAdd]);
-    setShowForm(false);
-    // Reset form
-    setNewBook({
-      title: "",
-      author: "",
-      recommended: false,
-      rating: 0,
-      formato: "",
-      pageNumber: 0,
-      startDate: "",
-      endDate: "",
-      favCharacter: "",
-      hatedCharacter: "",
-      ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
-      genre: "",
-      favPhrases: [],
-      review: ""
-    });
+      if (!response.ok) {
+        throw new Error(`Error adding entry: ${response.statusText}`);
+      }
+
+      // Refetch the entries after adding a new item
+      fetchEntries();
+
+      setShowForm(false);
+      // Reset form
+      setNewBook({
+        title: "",
+        author: "",
+        recommended: false,
+        rating: 0,
+        formato: "",
+        pageNumber: 0,
+        startDate: "",
+        endDate: "",
+        favCharacter: "",
+        hatedCharacter: "",
+        ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
+        genre: "",
+        favPhrases: [],
+        review: ""
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error adding entry:', err);
+      alert(`Failed to add book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+    }
+  };
+
+  const handleDeleteEntry = async (id: number) => {
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting entry: ${response.statusText}`);
+      }
+
+      // Update state by removing the deleted entry
+      setEntries(entries.filter(entry => entry.id !== id));
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error deleting entry:', err);
+      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+    }
   };
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <Breadcrumb /> {/* Add Breadcrumb component */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">All Recently Read Books</h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -235,7 +234,7 @@ export default function RecentlyReadPage() {
                 <Input type="number" id="rating" name="rating" value={newBook.rating} onChange={handleInputChange} min="0" max="5" />
               </div>
               <div>
-                <Label htmlFor="formato" className="mb-1">Formato</Label>
+                <Label htmlFor="formato" className="mb-1">Format</Label>
                 <Select onValueChange={(value) => handleSelectChange("formato", value)} value={newBook.formato}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select format" />
@@ -311,26 +310,50 @@ export default function RecentlyReadPage() {
         </Card>
       )}
 
-      <div className="flex flex-col gap-4">
-        {recentlyReadBooks.map((book) => (
-          <Link key={book.id} href={`/recently-read/${book.id}`} passHref>
-            <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer">
-              <CardContent className="p-4">
-                <h3 className="text-lg font-semibold">{book.title}</h3>
-                <p className="text-sm text-gray-600">{book.author}</p>
-                <div className="flex items-center">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span key={i} className={`text-yellow-500 ${i < book.rating ? 'fill-current' : ''}`}>
-                      {i < book.rating ? '★' : '☆'}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-500 mt-2">{book.review}</p>
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {[...Array(5)].map((_, index) => (
+            <Card key={index} className="border-none shadow-md p-4">
+              <CardContent className="p-0">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/4" />
               </CardContent>
             </Card>
-          </Link>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-500">Error: {error}</p>}
+
+          {!loading && !error && (
+            <div className="flex flex-col gap-4">
+              {entries.map((entry) => (
+                <Card key={entry.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer relative"> {/* Added relative positioning */}
+                  <Link href={`/recently-read/${entry.id}`} passHref> {/* Link wraps content */}
+                    <CardContent className="p-4 pr-10"> {/* Added right padding to make space for button */}
+                      <h3 className="text-lg font-semibold">{entry.title}</h3>
+                      <p className="text-sm text-gray-600">{entry.author}</p>
+                      {/* Display overall rating if available */}
+                      {entry.rating !== null && (
+                        <div className="flex items-center">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i} className={`text-yellow-500 ${i < (entry.rating || 0) ? 'fill-current' : ''}`}>
+                              {i < (entry.rating || 0) ? '★' : '☆'}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Display review if available */}
+                      {entry.review && <p className="text-sm text-gray-500 mt-2">{entry.review}</p>}
+                    </CardContent>
+                  </Link>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteEntry(entry.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Positioned in top right */}
+                    <FaTrash className="text-red-500" /> {/* Added trash icon and color */}
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
 
       <div className="mt-8">
         <Link href="/">

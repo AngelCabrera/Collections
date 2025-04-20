@@ -1,191 +1,226 @@
 "use client";
 
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 
-// Placeholder data (should ideally be fetched from an API or context in a real app)
-const initialRecentlyReadBooks = [
-  {
-    id: 1,
-    title: "Book 1",
-    author: "Author 1",
-    recommended: true,
-    rating: 5,
-    formato: "digital",
-    pageNumber: 300,
-    startDate: "2023-01-01",
-    endDate: "2023-01-15",
-    favCharacter: "Character A",
-    hatedCharacter: "Character B",
-    ratingDetails: { romance: 4, sadness: 2, spicy: 1, final: 5 },
-    genre: "Fiction",
-    favPhrases: ["Phrase 1", "Phrase 2"],
-    review: "Great book!"
-  },
-  {
-    id: 2,
-    title: "Book 2",
-    author: "Author 2",
-    recommended: false,
-    rating: 4,
-    formato: "physical",
-    pageNumber: 450,
-    startDate: "2023-02-01",
-    endDate: "2023-02-20",
-    favCharacter: "Character C",
-    hatedCharacter: "Character D",
-    ratingDetails: { romance: 1, sadness: 5, spicy: 0, final: 4 },
-    genre: "Drama",
-    favPhrases: ["Phrase 3"],
-    review: "Enjoyed it."
-  },
-  {
-    id: 3,
-    title: "Book 3",
-    author: "Author 3",
-    recommended: true,
-    rating: 3,
-    formato: "both",
-    pageNumber: 250,
-    startDate: "2023-03-01",
-    endDate: "2023-03-10",
-    favCharacter: "Character E",
-    hatedCharacter: "Character F",
-    ratingDetails: { romance: 3, sadness: 3, spicy: 3, final: 3 },
-    genre: "Fantasy",
-    favPhrases: [],
-    review: "Okay read."
-  },
-  {
-    id: 4,
-    title: "Book 4",
-    author: "Author 4",
-    recommended: false,
-    rating: 4,
-    formato: "digital",
-    pageNumber: 350,
-    startDate: "2023-04-01",
-    endDate: "2023-04-18",
-    favCharacter: "Character G",
-    hatedCharacter: "Character H",
-    ratingDetails: { romance: 2, sadness: 4, spicy: 1, final: 4 },
-    genre: "Mystery",
-    favPhrases: ["Phrase 4"],
-    review: "Good read."
-  },
-  {
-    id: 5,
-    title: "Book 5",
-    author: "Author 5",
-    recommended: true,
-    rating: 5,
-    formato: "physical",
-    pageNumber: 500,
-    startDate: "2023-05-01",
-    endDate: "2023-05-25",
-    favCharacter: "Character I",
-    hatedCharacter: "Character J",
-    ratingDetails: { romance: 5, sadness: 1, spicy: 4, final: 5 },
-    genre: "Romance",
-    favPhrases: ["Phrase 5", "Phrase 6"],
-    review: "Loved it!"
-  },
-];
+// Define interface for entry data (matching the 'entries' table structure)
+interface Entry {
+  id: number;
+  title: string;
+  author: string;
+  recommended: boolean | null;
+  rating: number | null;
+  formato: string | null;
+  page_number: number | null; // Note: snake_case from DB
+  start_date: string | null; // Note: snake_case from DB
+  end_date: string | null;   // Note: snake_case from DB
+  fav_character: string | null; // Note: snake_case from DB
+  hated_character: string | null; // Note: snake_case from DB
+  rating_details: { // JSONB column
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  } | null;
+  genre: string | null;
+  fav_phrases: string[] | null; // JSONB column
+  review: string | null;
+}
+
 
 export default function RecentlyReadBookPage() {
   const params = useParams();
+  const router = useRouter();
   const bookId = parseInt(params.bookId as string, 10);
 
-  // Find the book with the matching ID
-  const book = initialRecentlyReadBooks.find(book => book.id === bookId);
+  const [entry, setEntry] = useState<Entry | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!book) {
+  useEffect(() => {
+    const fetchEntry = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch the specific entry by ID
+        const response = await fetch(`/api/entries?id=${bookId}`);
+        if (!response.ok) {
+          throw new Error(`Error fetching entry: ${response.statusText}`);
+        }
+        const data: Entry[] = await response.json();
+        if (data.length > 0) {
+          setEntry(data[0]); // Assuming the API returns an array with one item
+        } else {
+          setEntry(null); // Book not found
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error('Error fetching entry:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (bookId) {
+      fetchEntry();
+    }
+  }, [bookId]); // Refetch when bookId changes
+
+  const handleDeleteBook = async () => {
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: bookId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting book: ${response.statusText}`);
+      }
+
+      // Navigate back to the recently read list after successful deletion
+      router.push('/recently-read');
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error deleting book:', err);
+      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+    }
+  };
+
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <Skeleton className="h-8 w-1/2 mb-8" /> {/* Title skeleton */}
+        <Card className="border-none shadow-md py-6">
+          <CardHeader>
+            <Skeleton className="h-7 w-3/4 mb-2" /> {/* Book Title skeleton */}
+            <Skeleton className="h-4 w-1/2" /> {/* Author skeleton */}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-4 w-1/4" /> {/* Recommended skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Overall Rating skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Format skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Page Number skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Start Date skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* End Date skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Favorite Character skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Hated Character skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Genre skeleton */}
+            <Skeleton className="h-20 w-full" /> {/* Review skeleton */}
+          </CardContent>
+        </Card>
+        <div className="mt-8 flex justify-between">
+          <Skeleton className="h-10 w-32" /> {/* Back button skeleton */}
+          <Skeleton className="h-10 w-24" /> {/* Delete button skeleton */}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="container mx-auto py-8 px-4 text-red-500">Error: {error}</div>;
+  }
+
+  if (!entry) {
     return <div className="container mx-auto py-8 px-4">Book not found</div>;
   }
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <Breadcrumb itemName={entry?.title} /> {/* Add Breadcrumb component and pass item name */}
       <h1 className="text-2xl font-semibold mb-8">Book Details</h1>
 
-      <Card className="border-none shadow-md">
+      <Card className="border-none shadow-md py-6">
         <CardHeader>
-          <CardTitle>{book.title}</CardTitle>
-          <p className="text-sm text-gray-600">{book.author}</p>
+          <CardTitle>{entry.title}</CardTitle>
+          <p className="text-sm text-gray-600">{entry.author}</p>
         </CardHeader>
-        <CardContent className="space-y-4 py-6">
-          <p><strong>Recommended:</strong> {book.recommended ? 'Yes' : 'No'}</p>
-          <div className="flex items-center">
-            <strong className="mr-2">Overall Rating:</strong>
-            {Array.from({ length: 5 }, (_, i) => (
-              <span key={i} className={`text-yellow-500 ${i < book.rating ? 'fill-current' : ''}`}>
-                {i < book.rating ? '★' : '☆'}
-              </span>
-            ))}
-          </div>
-          <p><strong>Formato:</strong> {book.formato}</p>
-          <p><strong>Page Number:</strong> {book.pageNumber}</p>
-          <p><strong>Start Date:</strong> {book.startDate}</p>
-          <p><strong>End Date:</strong> {book.endDate}</p>
-          <p><strong>Favorite Character:</strong> {book.favCharacter}</p>
-          <p><strong>Hated Character:</strong> {book.hatedCharacter}</p>
-          <div>
-            <strong>Detailed Ratings:</strong>
-            <div className="space-y-2 mt-2">
-              <div className="flex items-center">
-                <strong className="w-24">Romance:</strong>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-red-500 ${i < book.ratingDetails.romance ? 'fill-current' : ''}`}>
-                    {i < book.ratingDetails.romance ? '❤️' : '🤍'}
+        <CardContent className="space-y-4">
+          <p><strong>Recommended:</strong> {entry.recommended ? 'Yes' : 'No'}</p>
+          {entry.rating !== null && (
+            <div className="flex items-center">
+              <strong className="mr-2">Overall Rating:</strong>
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i} className={`text-yellow-500 ${i < (entry.rating || 0) ? 'fill-current' : ''}`}>
+                  {i < (entry.rating || 0) ? '★' : '☆'}
+                </span>
+              ))}
+            </div>
+          )}
+          {entry.formato && <p><strong>Format:</strong> {entry.formato}</p>}
+          {entry.page_number !== null && <p><strong>Page Number:</strong> {entry.page_number}</p>}
+          {entry.start_date && <p><strong>Start Date:</strong> {entry.start_date}</p>}
+          {entry.end_date && <p><strong>End Date:</strong> {entry.end_date}</p>}
+          {entry.fav_character && <p><strong>Favorite Character:</strong> {entry.fav_character}</p>}
+          {entry.hated_character && <p><strong>Hated Character:</strong> {entry.hated_character}</p>}
+          {entry.rating_details && (
+            <div>
+              <strong>Detailed Ratings:</strong>
+              <div className="space-y-2 mt-2">
+                <div className="flex items-center">
+                  <strong className="w-24">Romance:</strong>
+                  {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className={`text-red-500 ${i < (entry.rating_details?.romance || 0) ? 'fill-current' : ''}`}>
+                    {i < (entry.rating_details?.romance || 0) ? '❤️' : '🤍'}
                   </span>
-                ))}
-              </div>
-              <div className="flex items-center">
-                <strong className="w-24">Sadness:</strong>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-blue-500 ${i < book.ratingDetails.sadness ? 'fill-current' : ''}`}>
-                    {i < book.ratingDetails.sadness ? '💧' : '◦'} {/* Using '◦' for empty tear drop */}
+                  ))}
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">Sadness:</strong>
+                  {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className={`text-blue-500 ${i < (entry.rating_details?.sadness || 0) ? 'fill-current' : ''}`}>
+                    {i < (entry.rating_details?.sadness || 0) ? '💧' : '◦'} {/* Using '◦' for empty tear drop */}
                   </span>
-                ))}
-              </div>
-              <div className="flex items-center">
-                <strong className="w-24">Spicy:</strong>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-orange-500 ${i < book.ratingDetails.spicy ? 'fill-current' : ''}`}>
-                    {i < book.ratingDetails.spicy ? '🌶️' : '◦'} {/* Using '◦' for empty chili */}
+                  ))}
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">Spicy:</strong>
+                  {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className={`text-orange-500 ${i < (entry.rating_details?.spicy || 0) ? 'fill-current' : ''}`}>
+                    {i < (entry.rating_details?.spicy || 0) ? '🌶️' : '◦'} {/* Using '◦' for empty chili */}
                   </span>
-                ))}
-              </div>
-              <div className="flex items-center">
-                <strong className="w-24">Final:</strong>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-green-500 ${i < book.ratingDetails.final ? 'fill-current' : ''}`}>
-                    {i < book.ratingDetails.final ? '✅' : '◦'} {/* Using '◦' for empty checkmark */}
+                  ))}
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">Final:</strong>
+                  {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className={`text-green-500 ${i < (entry.rating_details?.final || 0) ? 'fill-current' : ''}`}>
+                    {i < (entry.rating_details?.final || 0) ? '✅' : '◦'} {/* Using '◦' for empty checkmark */}
                   </span>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <p><strong>Genre:</strong> {book.genre}</p>
-          <div>
-            <strong>Favorite Phrases:</strong>
-            {book.favPhrases.length > 0 ? (
+          )}
+          {entry.genre && <p><strong>Genre:</strong> {entry.genre}</p>}
+          {entry.fav_phrases && entry.fav_phrases.length > 0 && (
+            <div>
+              <strong>Favorite Phrases:</strong>
               <ul className="list-disc list-inside">
-                {book.favPhrases.map((phrase, index) => <li key={index}>{phrase}</li>)}
+                {entry.fav_phrases.map((phrase, index) => <li key={index}>{phrase}</li>)}
               </ul>
-            ) : (
-              <span> None</span>
-            )}
-          </div>
-          <p><strong>Review:</strong> {book.review}</p>
+            </div>
+          )}
+          {entry.review && <p><strong>Review:</strong> {entry.review}</p>}
         </CardContent>
       </Card>
 
-      <div className="mt-8">
+      <div className="mt-8 flex justify-between">
         <Link href="/recently-read">
           <Button variant="outline">Back to Recently Read</Button>
         </Link>
+        <Button variant="destructive" onClick={handleDeleteBook}>
+          Delete
+        </Button>
       </div>
     </div>
   );

@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
+import { FaTrash } from 'react-icons/fa'; // Import the trash icon
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 
 // Define interface for wishlist book data
 interface WishlistBook {
@@ -16,53 +19,108 @@ interface WishlistBook {
   note: string;
 }
 
-// Placeholder data (should ideally be fetched from an API or context in a real app)
-const initialWishlistBooks: WishlistBook[] = [
-  { id: 1, title: "Wishlist Book 1", author: "Wishlist Author 1", note: "Heard good things." },
-  { id: 2, title: "Wishlist Book 2", author: "Wishlist Author 2", note: "Recommended by a friend." },
-  { id: 3, title: "Wishlist Book 3", author: "Wishlist Author 3", note: "Looks interesting." },
-  { id: 4, title: "Wishlist Book 4", author: "Wishlist Author 4", note: "Want to read this year." },
-  { id: 5, title: "Wishlist Book 5", author: "Wishlist Author 5", note: "Gift idea." },
-];
-
 export default function WishlistPage() {
-  const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>(initialWishlistBooks);
+  const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<Omit<WishlistBook, 'id'>>({
     title: "",
     author: "",
     note: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWishlist = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/wishlist');
+      if (!response.ok) {
+        throw new Error(`Error fetching wishlist: ${response.statusText}`);
+      }
+      const data: WishlistBook[] = await response.json();
+      setWishlistBooks(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error fetching wishlist:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []); // Fetch wishlist on component mount
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewBook({ ...newBook, [name]: value });
   };
 
-  const handleAddBook = () => {
+  const handleAddBook = async () => {
     // Basic validation
     if (!newBook.title || !newBook.author) {
       alert("Title and Author are required.");
       return;
     }
 
-    const bookToAdd: WishlistBook = {
-      ...newBook,
-      id: wishlistBooks.length + 1, // Simple ID generation
-    };
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBook),
+      });
 
-    setWishlistBooks([...wishlistBooks, bookToAdd]);
-    setShowForm(false);
-    // Reset form
-    setNewBook({
-      title: "",
-      author: "",
-      note: "",
-    });
+      if (!response.ok) {
+        throw new Error(`Error adding wishlist item: ${response.statusText}`);
+      }
+
+      // Refetch the wishlist after adding a new item
+      fetchWishlist();
+
+      setShowForm(false);
+      // Reset form
+      setNewBook({
+        title: "",
+        author: "",
+        note: "",
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error adding wishlist item:', err);
+      alert(`Failed to add book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting wishlist item: ${response.statusText}`);
+      }
+
+      // Update state by removing the deleted item
+      setWishlistBooks(wishlistBooks.filter(item => item.id !== id));
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error deleting wishlist item:', err);
+      alert(`Failed to delete book: ${err instanceof Error ? err.message : 'An unknown error occurred'}`);
+    }
   };
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <Breadcrumb /> {/* Add Breadcrumb component */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">All Wishlist Books</h1>
         <Button onClick={() => setShowForm(!showForm)}>
@@ -93,17 +151,39 @@ export default function WishlistPage() {
         </Card>
       )}
 
-      <div className="flex flex-col gap-4">
-        {wishlistBooks.map((book) => (
-          <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer">
-            <CardContent className="p-4">
-              <h3 className="text-lg font-semibold">{book.title}</h3>
-              <p className="text-sm text-gray-600">{book.author}</p>
-              {book.note && <p className="text-sm text-gray-500 mt-2">{book.note}</p>}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {[...Array(5)].map((_, index) => (
+            <Card key={index} className="border-none shadow-md p-4">
+              <CardContent className="p-0">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-500">Error: {error}</p>}
+
+          {!loading && !error && (
+            <div className="flex flex-col gap-4">
+              {wishlistBooks.map((book) => (
+                <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer relative"> {/* Added relative positioning */}
+                  <Link href={`/wishlist/${book.id}`} passHref> {/* Link wraps content */}
+                    <CardContent className="p-4 pr-10"> {/* Added right padding to make space for button */}
+                      <h3 className="text-lg font-semibold">{book.title}</h3>
+                      <p className="text-sm text-gray-600">{book.author}</p>
+                      {book.note && <p className="text-sm text-gray-500 mt-2">{book.note}</p>}
+                    </CardContent>
+                  </Link>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(book.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Changed variant, added cursor-pointer */}
+                    <FaTrash className="text-red-500" /> {/* Using the trash icon and added color */}
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
 
       <div className="mt-8">
         <Link href="/">
