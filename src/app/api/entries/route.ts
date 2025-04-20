@@ -2,8 +2,17 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
 // Handle GET requests to fetch entries
-export async function GET() {
-  const { data, error } = await supabase.from('entries').select('*');
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  let query = supabase.from('entries').select('*');
+
+  if (id) {
+    query = query.eq('id', id);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching entries:', error);

@@ -8,10 +8,6 @@ const pwaConfig = withPWA({
 
 const nextConfig = {
   /* config options here */
-  i18n: {
-    locales: ['en', 'es'],
-    defaultLocale: 'en',
-  },
 };
 
 export default pwaConfig(nextConfig);
