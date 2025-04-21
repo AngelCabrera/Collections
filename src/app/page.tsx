@@ -7,8 +7,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import LanguageSwitcher from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import Rating from 'react-rating'; // Import the Rating component
-import { FaStar } from 'react-icons/fa'; // Import the star icon
+import { Rating, RoundedStar } from '@smastrom/react-rating' // Import the Rating component
+import '@smastrom/react-rating/style.css'
+
+// Define custom item shapes using Font Awesome icons
+const CustomStar = (
+<path xmlns="http://www.w3.org/2000/svg" d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+);
+
+const overallRatingStyles = {
+  itemShapes: CustomStar,
+  activeFillColor: '#ffb700',
+  inactiveFillColor: '#fbf1a9',
+};
+
 
 interface Entry {
   id: number;
@@ -58,10 +70,10 @@ export default function Home() {
         ]);
 
         if (!entriesResponse.ok) {
-          throw new Error(`Error fetching recently read books: ${entriesResponse.statusText}`);
+          throw new Error(`Error fetching recently read books: ${entriesResponse.text}`);
         }
         if (!wishlistResponse.ok) {
-          throw new Error(`Error fetching wishlist items: ${wishlistResponse.statusText}`);
+          throw new Error(`Error fetching wishlist items: ${wishlistResponse.text}`);
         }
 
         const [entriesData, wishlistData] = await Promise.all([
@@ -148,16 +160,17 @@ export default function Home() {
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold">{book.title}</h3>
                       <p className="text-sm text-gray-600">{book.author}</p>
+                      {book.review && <p className="text-sm text-gray-500 my-2">{book.review}</p>}
                       {book.rating !== null && (
                         <Rating
-                          initialRating={book.rating || 0}
-                          readonly={true}
-                          emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
-                          fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
-                          fractions={2} // Enable half stars
+                          value={book.rating || 0}
+                          readOnly={true}
+                          items={5}
+                          halfFillMode="svg"
+                          itemStyles={overallRatingStyles}
+                          style={{ maxWidth: "150px" }} // Set max width
                         />
                       )}
-                      {book.review && <p className="text-sm text-gray-500 mt-2">{book.review}</p>}
                     </CardContent>
                   </Card>
                 </Link>

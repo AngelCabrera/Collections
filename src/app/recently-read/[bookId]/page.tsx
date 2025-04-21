@@ -8,8 +8,65 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
-import Rating from 'react-rating'; // Import the Rating component
-import { FaStar, FaHeart, FaSadTear, FaFire } from 'react-icons/fa'; // Import necessary icons
+import { Rating } from '@smastrom/react-rating' // Import the Rating component
+import '@smastrom/react-rating/style.css'
+
+// Define custom item shapes using Font Awesome icons
+const CustomStar = (
+<path xmlns="http://www.w3.org/2000/svg" d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+);
+
+const CustomHeart = (
+  <path xmlns="http://www.w3.org/2000/svg" d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
+);
+
+// Placeholder for sadness icon - no direct droplet/tear found in react-icons/fa
+const CustomSadnessPlaceholder = (
+  <path xmlns="http://www.w3.org/2000/svg" d="M491-200q12-1 20.5-9.5T520-230q0-14-9-22.5t-23-7.5q-41 3-87-22.5T343-375q-2-11-10.5-18t-19.5-7q-14 0-23 10.5t-6 24.5q17 91 80 130t127 35ZM480-80q-137 0-228.5-94T160-408q0-100 79.5-217.5T480-880q161 137 240.5 254.5T800-408q0 140-91.5 234T480-80Z"/>
+);
+
+
+const CustomFire = (
+  <path xmlns="http://www.w3.org/2000/svg" d="M160-400q0-105 50-187t110-138q60-56 110-85.5l50-29.5v132q0 37 25 58.5t56 21.5q17 0 32.5-7t28.5-23l18-22q72 42 116 116.5T800-400q0 88-43 160.5T644-125q17-24 26.5-52.5T680-238q0-40-15-75.5T622-377L480-516 339-377q-29 29-44 64t-15 75q0 32 9.5 60.5T316-125q-70-42-113-114.5T160-400Zm320-4 85 83q17 17 26 38t9 45q0 49-35 83.5T480-120q-50 0-85-34.5T360-238q0-23 9-44.5t26-38.5l85-83Z"/>
+);
+
+const CustomFinal = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+  />
+);
+
+const overallRatingStyles = {
+  itemShapes: CustomStar,
+  activeFillColor: '#ffb700',
+  inactiveFillColor: '#fbf1a9',
+};
+
+const romanceRatingStyles = {
+  itemShapes: CustomHeart,
+  activeFillColor: '#e31b23', // Red color for heart
+  inactiveFillColor: '#ffb3b3', // Lighter red
+};
+
+const sadnessRatingStyles = {
+  itemShapes: CustomSadnessPlaceholder,
+  activeFillColor: '#007bff', // Blue color for placeholder
+  inactiveFillColor: '#b3d9ff', // Lighter blue
+};
+
+const spicyRatingStyles = {
+  itemShapes: CustomFire,
+  activeFillColor: '#ff6b00',
+  inactiveFillColor: '#f8d7da',
+};
+
+const finalRatingStyles = {
+  itemShapes: CustomFinal,
+  activeFillColor: '#28a745',
+  inactiveFillColor: '#d4edda',
+};
+
 
 // Define interface for entry data (matching the 'entries' table structure)
 interface Entry {
@@ -154,11 +211,12 @@ export default function RecentlyReadBookPage() {
             <div className="flex items-center">
               <strong className="mr-2">{t('overallRating')}:</strong>
               <Rating
-                initialRating={entry.rating || 0}
-                readonly={true}
-                emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
-                fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
-                fractions={2} // Enable half stars
+                value={entry.rating || 0}
+                readOnly={true}
+                items={5}
+                halfFillMode="svg"
+                itemStyles={overallRatingStyles}
+                style={{ maxWidth: "150px" }} // Set max width
               />
             </div>
           )}
@@ -175,41 +233,45 @@ export default function RecentlyReadBookPage() {
                 <div className="flex items-center">
                   <strong className="w-24">{t('romance')}:</strong>
                   <Rating
-                    initialRating={entry.rating_details?.romance || 0}
-                    readonly={true}
-                    emptySymbol={<FaHeart className="text-gray-300 mr-1" />} // Use FaHeart for empty symbol
-                    fullSymbol={<FaHeart className="text-red-500 mr-1" />} // Use FaHeart for full symbol (red for romance)
-                    fractions={2}
+                    value={entry.rating_details?.romance || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={romanceRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
                   />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('sadness')}:</strong>
                   <Rating
-                    initialRating={entry.rating_details?.sadness || 0}
-                    readonly={true}
-                    emptySymbol={<FaSadTear className="text-gray-300 mr-1" />} // Use FaSadTear for empty symbol
-                    fullSymbol={<FaSadTear className="text-blue-500 mr-1" />} // Use FaSadTear for full symbol (blue for sadness)
-                    fractions={2}
+                    value={entry.rating_details?.sadness || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={sadnessRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
                   />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('spicy')}:</strong>
                   <Rating
-                    initialRating={entry.rating_details?.spicy || 0}
-                    readonly={true}
-                    emptySymbol={<FaFire className="text-gray-300 mr-1" />} // Use FaFire for empty symbol
-                    fullSymbol={<FaFire className="text-orange-500 mr-1" />} // Use FaFire for full symbol (orange for spicy)
-                    fractions={2}
+                    value={entry.rating_details?.spicy || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={spicyRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
                   />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('final')}:</strong>
                   <Rating
-                    initialRating={entry.rating_details?.final || 0}
-                    readonly={true}
-                    emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
-                    fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
-                    fractions={2}
+                    value={entry.rating_details?.final || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={finalRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
                   />
                 </div>
               </div>
