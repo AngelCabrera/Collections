@@ -10,8 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { FaTrash } from 'react-icons/fa'; // Import the trash icon
+import { FaTrash, FaStar, FaHeart, FaSadTear, FaFire } from 'react-icons/fa'; // Import necessary icons
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+import Rating from 'react-rating'; // Import the Rating component
+// import '@smastrom/react-rating/style.css' // Remove old package's CSS
 
 // Define interface for entry data (matching the 'entries' table structure)
 interface Entry {
@@ -56,7 +58,7 @@ interface NewBookState {
     final: number;
   };
   genre: string;
-  favPhrases: string[];
+  favPhrases: string; // Change to string to hold raw input
   review: string;
 }
 
@@ -78,7 +80,7 @@ export default function RecentlyReadPage() {
     hatedCharacter: "",
     ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
     genre: "",
-    favPhrases: [],
+    favPhrases: "", // Initialize as empty string
     review: ""
   });
   const [loading, setLoading] = useState(true);
@@ -132,13 +134,22 @@ export default function RecentlyReadPage() {
       return;
     }
 
+    // Process favPhrases string into an array, handling empty input
+    const processedFavPhrases = newBook.favPhrases
+      .split(',')
+      .map(phrase => phrase.trim())
+      .filter(phrase => phrase.length > 0); // Remove empty strings
+
     try {
       const response = await fetch('/api/entries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newBook),
+        body: JSON.stringify({
+          ...newBook,
+          favPhrases: processedFavPhrases, // Send the processed array
+        }),
       });
 
       if (!response.ok) {
@@ -163,7 +174,7 @@ export default function RecentlyReadPage() {
         hatedCharacter: "",
         ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
         genre: "",
-        favPhrases: [],
+        favPhrases: "", // Reset to empty string
         review: ""
       });
       } catch (err: unknown) {
@@ -233,7 +244,13 @@ export default function RecentlyReadPage() {
               </div>
               <div>
                 <Label htmlFor="rating" className="mb-1">{t('overallRating')}</Label>
-                <Input type="number" id="rating" name="rating" value={newBook.rating} onChange={handleInputChange} min="0" max="5" />
+                <Rating
+                  initialRating={newBook.rating}
+                  onChange={(value: number) => setNewBook({ ...newBook, rating: value })}
+                  emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Add right margin
+                  fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Add right margin
+                  fractions={2} // Enable half stars
+                />
               </div>
               <div>
                 <Label htmlFor="formato" className="mb-1">{t('format')}</Label>
@@ -277,8 +294,9 @@ export default function RecentlyReadPage() {
                 <Input
                   id="favPhrases"
                   name="favPhrases"
-                  value={newBook.favPhrases.join(', ')}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewBook({ ...newBook, favPhrases: e.target.value.split(',').map((phrase: string) => phrase.trim()) })}
+                  value={newBook.favPhrases} // Use the raw string value
+                  onChange={handleInputChange} // Use the generic input handler
+                  placeholder={t('separatePhrasesWithCommas')} // Add placeholder text
                 />
               </div>
               <div className="col-span-1 md:col-span-2">
@@ -290,19 +308,43 @@ export default function RecentlyReadPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="rating-romance" className="mb-1">{t('romance')}</Label>
-                    <Input type="number" id="rating-romance" name="romance" value={newBook.ratingDetails.romance} onChange={(e) => handleRatingChange('romance', e.target.value)} min="0" max="5" />
+                    <Rating
+                      initialRating={newBook.ratingDetails.romance}
+                      onChange={(value: number) => handleRatingChange('romance', value.toString())} // Pass value as string to match existing handler
+                      emptySymbol={<FaHeart className="text-gray-300 mr-1" />} // Add right margin
+                      fullSymbol={<FaHeart className="text-red-500 mr-1" />} // Add right margin (red for romance)
+                      fractions={2}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="rating-sadness" className="mb-1">{t('sadness')}</Label>
-                    <Input type="number" id="rating-sadness" name="sadness" value={newBook.ratingDetails.sadness} onChange={(e) => handleRatingChange('sadness', e.target.value)} min="0" max="5" />
+                    <Rating
+                      initialRating={newBook.ratingDetails.sadness}
+                      onChange={(value: number) => handleRatingChange('sadness', value.toString())} // Pass value as string
+                      emptySymbol={<FaSadTear className="text-gray-300 mr-1" />} // Add right margin
+                      fullSymbol={<FaSadTear className="text-blue-500 mr-1" />} // Add right margin (blue for sadness)
+                      fractions={2}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="rating-spicy" className="mb-1">{t('spicy')}</Label>
-                    <Input type="number" id="rating-spicy" name="spicy" value={newBook.ratingDetails.spicy} onChange={(e) => handleRatingChange('spicy', e.target.value)} min="0" max="5" />
+                    <Rating
+                      initialRating={newBook.ratingDetails.spicy}
+                      onChange={(value: number) => handleRatingChange('spicy', value.toString())} // Pass value as string
+                      emptySymbol={<FaFire className="text-gray-300 mr-1" />} // Add right margin
+                      fullSymbol={<FaFire className="text-orange-500 mr-1" />} // Add right margin (orange for spicy)
+                      fractions={2}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="rating-final" className="mb-1">{t('final')}</Label>
-                    <Input type="number" id="rating-final" name="final" value={newBook.ratingDetails.final} onChange={(e) => handleRatingChange('final', e.target.value)} min="0" max="5" />
+                    <Rating
+                      initialRating={newBook.ratingDetails.final}
+                      onChange={(value: number) => handleRatingChange('final', value.toString())} // Pass value as string
+                      emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Add right margin
+                      fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Add right margin
+                      fractions={2}
+                    />
                   </div>
                 </div>
               </div>
@@ -337,31 +379,31 @@ export default function RecentlyReadPage() {
                       <p className="text-sm text-gray-600">{entry.author}</p>
                       {/* Display overall rating if available */}
                       {entry.rating !== null && (
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={`text-yellow-500 ${i < (entry.rating || 0) ? 'fill-current' : ''}`}>
-                              {i < (entry.rating || 0) ? '★' : '☆'}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {/* Display review if available */}
-                      {entry.review && <p className="text-sm text-gray-500 mt-2">{entry.review}</p>}
-                    </CardContent>
-                  </Link>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteEntry(entry.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Positioned in top right */}
-                    <FaTrash className="text-red-500" /> {/* Added trash icon and color */}
-                  </Button>
-                </Card>
-              ))}
-            </div>
-          )}
+                        <Rating
+                          initialRating={entry.rating || 0}
+                          readonly={true}
+                          emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Add right margin
+                          fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Add right margin
+                          fractions={2} // Enable half stars
+                        />
+                  )}
+                  {/* Display review if available */}
+                  {entry.review && <p className="text-sm text-gray-500 mt-2">{entry.review}</p>}
+                </CardContent>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={() => handleDeleteEntry(entry.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Positioned in top right */}
+                <FaTrash className="text-red-500" /> {/* Added trash icon and color */}
+              </Button>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      <div className="mt-8">
-        <Link href="/">
-          <Button variant="outline">{t('backToHome')}</Button>
-        </Link>
-      </div>
-    </div>
-  );
+  <div className="mt-8">
+    <Link href="/">
+      <Button variant="outline">{t('backToHome')}</Button>
+    </Link>
+  </div>
+</div>
+);
 }

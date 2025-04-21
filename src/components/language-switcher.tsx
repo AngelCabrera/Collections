@@ -1,31 +1,20 @@
 'use client';
 
 import { useTranslation } from "@/translations/TranslationContext";
-import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useTranslation();
 
-  const handleLanguageChange = (newLocale: string) => {
-    setLocale(newLocale);
-  };
-
   return (
-    <div>
-      <Button
-        variant="link"
-        onClick={() => handleLanguageChange('en')}
-        disabled={locale === 'en'}
-      >
-        English
-      </Button>
-      <Button
-        variant="link"
-        onClick={() => handleLanguageChange('es')}
-        disabled={locale === 'es'}
-      >
-        Español
-      </Button>
-    </div>
+    <Select onValueChange={(value) => setLocale(value)} value={locale}>
+      <SelectTrigger className="w-[100px]">
+        <SelectValue placeholder="Language" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="en">English</SelectItem>
+        <SelectItem value="es">Español</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

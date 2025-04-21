@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import LanguageSwitcher from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import Rating from 'react-rating'; // Import the Rating component
+import { FaStar } from 'react-icons/fa'; // Import the star icon
 
 interface Entry {
   id: number;
@@ -147,13 +149,13 @@ export default function Home() {
                       <h3 className="text-lg font-semibold">{book.title}</h3>
                       <p className="text-sm text-gray-600">{book.author}</p>
                       {book.rating !== null && (
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={`text-yellow-500 ${i < book.rating! ? 'fill-current' : ''}`}>
-                              {i < book.rating! ? '★' : '☆'}
-                            </span>
-                          ))}
-                        </div>
+                        <Rating
+                          initialRating={book.rating || 0}
+                          readonly={true}
+                          emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
+                          fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
+                          fractions={2} // Enable half stars
+                        />
                       )}
                       {book.review && <p className="text-sm text-gray-500 mt-2">{book.review}</p>}
                     </CardContent>

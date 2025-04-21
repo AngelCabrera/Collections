@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+import Rating from 'react-rating'; // Import the Rating component
+import { FaStar, FaHeart, FaSadTear, FaFire } from 'react-icons/fa'; // Import necessary icons
 
 // Define interface for entry data (matching the 'entries' table structure)
 interface Entry {
@@ -151,17 +153,19 @@ export default function RecentlyReadBookPage() {
           {entry.rating !== null && (
             <div className="flex items-center">
               <strong className="mr-2">{t('overallRating')}:</strong>
-              {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className={`text-yellow-500 ${i < (entry.rating || 0) ? 'fill-current' : ''}`}>
-                  {i < (entry.rating || 0) ? '★' : '☆'}
-                </span>
-              ))}
+              <Rating
+                initialRating={entry.rating || 0}
+                readonly={true}
+                emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
+                fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
+                fractions={2} // Enable half stars
+              />
             </div>
           )}
-          {entry.formato && <p><strong>{t('format')}:</strong> {entry.formato}</p>}
+          {entry.formato && <p><strong>{t('format')}:</strong> {t(`format${entry.formato.charAt(0).toUpperCase()}${entry.formato.slice(1)}`)}</p>}
           {entry.page_number !== null && <p><strong>{t('pageNumber')}:</strong> {entry.page_number}</p>}
-          {entry.start_date && <p><strong>{t('startDate')}:</strong> {entry.start_date}</p>}
-          {entry.end_date && <p><strong>{t('endDate')}:</strong> {entry.end_date}</p>}
+          {entry.start_date && <p><strong>{t('startDate')}:</strong> {new Date(entry.start_date).toLocaleDateString()}</p>}
+          {entry.end_date && <p><strong>{t('endDate')}:</strong> {new Date(entry.end_date).toLocaleDateString()}</p>}
           {entry.fav_character && <p><strong>{t('favoriteCharacter')}:</strong> {entry.fav_character}</p>}
           {entry.hated_character && <p><strong>{t('hatedCharacter')}:</strong> {entry.hated_character}</p>}
           {entry.rating_details && (
@@ -170,35 +174,43 @@ export default function RecentlyReadBookPage() {
               <div className="space-y-2 mt-2">
                 <div className="flex items-center">
                   <strong className="w-24">{t('romance')}:</strong>
-                  {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-red-500 ${i < (entry.rating_details?.romance || 0) ? 'fill-current' : ''}`}>
-                    {i < (entry.rating_details?.romance || 0) ? '❤️' : '🤍'}
-                  </span>
-                  ))}
+                  <Rating
+                    initialRating={entry.rating_details?.romance || 0}
+                    readonly={true}
+                    emptySymbol={<FaHeart className="text-gray-300 mr-1" />} // Use FaHeart for empty symbol
+                    fullSymbol={<FaHeart className="text-red-500 mr-1" />} // Use FaHeart for full symbol (red for romance)
+                    fractions={2}
+                  />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('sadness')}:</strong>
-                  {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-blue-500 ${i < (entry.rating_details?.sadness || 0) ? 'fill-current' : ''}`}>
-                    {i < (entry.rating_details?.sadness || 0) ? '💧' : '◦'} {/* Using '◦' for empty tear drop */}
-                  </span>
-                  ))}
+                  <Rating
+                    initialRating={entry.rating_details?.sadness || 0}
+                    readonly={true}
+                    emptySymbol={<FaSadTear className="text-gray-300 mr-1" />} // Use FaSadTear for empty symbol
+                    fullSymbol={<FaSadTear className="text-blue-500 mr-1" />} // Use FaSadTear for full symbol (blue for sadness)
+                    fractions={2}
+                  />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('spicy')}:</strong>
-                  {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-orange-500 ${i < (entry.rating_details?.spicy || 0) ? 'fill-current' : ''}`}>
-                    {i < (entry.rating_details?.spicy || 0) ? '🌶️' : '◦'} {/* Using '◦' for empty chili */}
-                  </span>
-                  ))}
+                  <Rating
+                    initialRating={entry.rating_details?.spicy || 0}
+                    readonly={true}
+                    emptySymbol={<FaFire className="text-gray-300 mr-1" />} // Use FaFire for empty symbol
+                    fullSymbol={<FaFire className="text-orange-500 mr-1" />} // Use FaFire for full symbol (orange for spicy)
+                    fractions={2}
+                  />
                 </div>
                 <div className="flex items-center">
                   <strong className="w-24">{t('final')}:</strong>
-                  {Array.from({ length: 5 }, (_, i) => (
-                  <span key={i} className={`text-green-500 ${i < (entry.rating_details?.final || 0) ? 'fill-current' : ''}`}>
-                    {i < (entry.rating_details?.final || 0) ? '✅' : '◦'} {/* Using '◦' for empty checkmark */}
-                  </span>
-                  ))}
+                  <Rating
+                    initialRating={entry.rating_details?.final || 0}
+                    readonly={true}
+                    emptySymbol={<FaStar className="text-gray-300 mr-1" />} // Use FaStar for empty symbol
+                    fullSymbol={<FaStar className="text-yellow-500 mr-1" />} // Use FaStar for full symbol
+                    fractions={2}
+                  />
                 </div>
               </div>
             </div>

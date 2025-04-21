@@ -48,7 +48,6 @@
   "bookNotFound": "Book not found",
   "errorFetchingEntry": "Error fetching entry:",
   "errorDeletingBook": "Error deleting book:",
-  "failedToDeleteBook": "Failed to delete book",
   "allWishlistBooks": "All Wishlist Books",
   "addNewWishlistBook": "Add New Wishlist Book",
   "note": "Note",
@@ -61,5 +60,8 @@
   "failedToDeleteItem": "Failed to delete item",
   "home": "Home",
   "recently-read": "Recently Read",
-  "wishlist": "Wishlist"
+  "separatePhrasesWithCommas": "Separate phrases with commas",
+  "formatDigital": "Digital",
+  "formatPhysical": "Physical",
+  "formatBoth": "Physical and Digital"
 }

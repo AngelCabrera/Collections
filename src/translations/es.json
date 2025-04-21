@@ -48,7 +48,6 @@
   "bookNotFound": "Libro no encontrado",
   "errorFetchingEntry": "Error al obtener entrada:",
   "errorDeletingBook": "Error al eliminar libro:",
-  "failedToDeleteBook": "Error al eliminar libro",
   "allWishlistBooks": "Todos los libros de la lista de deseos",
   "addNewWishlistBook": "Agregar nuevo libro a la lista de deseos",
   "note": "Nota",
@@ -61,5 +60,8 @@
   "failedToDeleteItem": "Error al eliminar elemento",
   "home": "Inicio",
   "recently-read": "Leído recientemente",
-  "wishlist": "Lista de deseos"
+  "separatePhrasesWithCommas": "Separa las frases con comas",
+  "formatDigital": "Digital",
+  "formatPhysical": "Físico",
+  "formatBoth": "Físico y Digital"
 }
