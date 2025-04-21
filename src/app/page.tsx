@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LanguageSwitcher from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Rating, RoundedStar } from '@smastrom/react-rating' // Import the Rating component
+import { Rating } from '@smastrom/react-rating' // Import the Rating component
 import '@smastrom/react-rating/style.css'
 
 // Define custom item shapes using Font Awesome icons

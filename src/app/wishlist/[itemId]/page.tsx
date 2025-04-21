@@ -54,7 +54,7 @@ export default function WishlistItemPage() {
     if (itemId) {
       fetchItem();
     }
-  }, [itemId]); // Refetch when itemId changes
+  }, [itemId, t]); // Refetch when itemId changes
 
   const handleDeleteItem = async () => {
     try {

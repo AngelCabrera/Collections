@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { FaTrash, FaStar, FaHeart, FaFire } from "react-icons/fa"; // Import necessary icons
+import { FaTrash } from "react-icons/fa"; // Import necessary icons
 import Breadcrumb from "@/components/breadcrumb"; // Import Breadcrumb component
 import { Rating } from "@smastrom/react-rating"; // Import the Rating component
 import "@smastrom/react-rating/style.css";

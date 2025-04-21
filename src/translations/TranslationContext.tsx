@@ -30,7 +30,7 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
         setLocaleState(browserLanguage);
       }
     }
-  }, []); // Run only once on mount
+  }, [translations]); // Run only once on mount
 
   const setLocale = (newLocale: string) => {
     setLocaleState(newLocale);

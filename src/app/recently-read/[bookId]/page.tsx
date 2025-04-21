@@ -130,7 +130,7 @@ export default function RecentlyReadBookPage() {
     if (bookId) {
       fetchEntry();
     }
-  }, [bookId]); // Refetch when bookId changes
+  }, [bookId, t]); // Refetch when bookId changes
 
   const handleDeleteBook = async () => {
     try {
