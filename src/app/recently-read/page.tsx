@@ -572,7 +572,7 @@ export default function RecentlyReadPage() {
           {entries.map((entry) => (
             <Card
               key={entry.id}
-              className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer relative"
+              className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer relative"
             >
               {" "}
               {/* Added relative positioning */}

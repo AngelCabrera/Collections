@@ -156,7 +156,7 @@ export default function Home() {
             <div className="flex flex-col gap-4">
               {recentlyReadBooks.slice(0, 3).map((book) => (
                 <Link key={book.id} href={`/recently-read/${book.id}`}>
-                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer">
+                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer">
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold">{book.title}</h3>
                       <p className="text-sm text-gray-600">{book.author}</p>
@@ -188,7 +188,7 @@ export default function Home() {
             <div className="flex flex-col gap-4">
               {wishlistBooks.slice(0, 3).map((book) => (
                 <Link key={book.id} href={`/wishlist/${book.id}`}>
-                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer">
+                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer">
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold">{book.title}</h3>
                       <p className="text-sm text-gray-600">{book.author}</p>

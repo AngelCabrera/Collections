@@ -171,7 +171,7 @@ export default function WishlistPage() {
           {!loading && !error && (
             <div className="flex flex-col gap-4">
               {wishlistBooks.map((book) => (
-                <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 cursor-pointer relative"> {/* Added relative positioning */}
+                <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer relative"> {/* Added relative positioning */}
                   <Link href={`/wishlist/${book.id}`} passHref> {/* Link wraps content */}
                     <CardContent className="p-4 pr-10"> {/* Added right padding to make space for button */}
                       <h3 className="text-lg font-semibold">{book.title}</h3>
