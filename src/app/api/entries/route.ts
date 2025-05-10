@@ -1,12 +1,42 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createServerClient } from '@supabase/ssr';
+import { cookies as getCookies } from 'next/headers';
+import type { CookieOptions } from '@supabase/ssr';
+
+// Helper to adapt the cookies() API to the interface expected by Supabase SSR
+async function getSupabaseCookies() {
+  const cookieStore = await getCookies();
+  return {
+    get(name: string) {
+      return cookieStore.get(name)?.value;
+    },
+    set(name: string, value: string, options: CookieOptions) {
+      // Not needed for API route context
+    },
+    remove(name: string, options: CookieOptions) {
+      // Not needed for API route context
+    },
+  };
+}
 
 // Handle GET requests to fetch entries
 export async function GET(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
-  let query = supabase.from('entries').select('*');
+  let query = supabase.from('entries').select('*').eq('user_id', user.id);
 
   if (id) {
     query = query.eq('id', id);
@@ -24,6 +54,18 @@ export async function GET(request: Request) {
 
 // Handle POST requests to add a new entry
 export async function POST(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const {
     title,
     author,
@@ -47,6 +89,7 @@ export async function POST(request: Request) {
   }
 
   const { data, error } = await supabase.from('entries').insert([{
+    user_id: user.id, // Associate entry with user_id
     title,
     author,
     recommended,
@@ -61,7 +104,7 @@ export async function POST(request: Request) {
     genre,
     fav_phrases: favPhrases, // JSONB column
     review,
-  }]);
+  }]).select();
 
   if (error) {
     console.error('Error adding entry:', error);
@@ -73,13 +116,25 @@ export async function POST(request: Request) {
 
 // Handle DELETE requests to remove an entry
 export async function DELETE(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id } = await request.json();
 
   if (!id) {
     return NextResponse.json({ error: 'Entry ID is required' }, { status: 400 });
   }
 
-  const { error } = await supabase.from('entries').delete().eq('id', id);
+  const { error } = await supabase.from('entries').delete().eq('id', id).eq('user_id', user.id);
 
   if (error) {
     console.error('Error deleting entry:', error);

@@ -1,0 +1,3409 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+public/
+  file.svg
+  globe.svg
+  manifest.json
+  next.svg
+  sw.js
+  vercel.svg
+  window.svg
+  workbox-4754cb34.js
+src/
+  app/
+    api/
+      entries/
+        route.ts
+      wishlist/
+        route.ts
+    login/
+      page.tsx
+    recently-read/
+      [bookId]/
+        page.tsx
+      page.tsx
+    signup/
+      page.tsx
+    wishlist/
+      [itemId]/
+        page.tsx
+      page.tsx
+    globals.css
+    layout.tsx
+    page.tsx
+  components/
+    ui/
+      button.tsx
+      card.tsx
+      input.tsx
+      label.tsx
+      select.tsx
+      skeleton.tsx
+      textarea.tsx
+    breadcrumb.tsx
+    language-switcher.tsx
+    theme-provider.tsx
+  contexts/
+    AuthContext.tsx
+  lib/
+    supabase.ts
+    supabaseBrowserClient.ts
+    utils.ts
+  translations/
+    en.json
+    es.json
+    i18n.ts
+    TranslationContext.tsx
+  middleware.ts
+.gitignore
+components.json
+eslint.config.mjs
+next.config.ts
+package.json
+postcss.config.mjs
+README.md
+tailwind.config.ts
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/app/login/page.tsx">
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+export default function LoginPage() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error } = await login(email, password);
+    setLoading(false);
+    if (error) {
+      setError(error);
+    } else {
+      router.push('/');
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Card className="w-full max-w-md p-6">
+        <h2 className="text-2xl font-bold mb-4">Log In</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logging in...' : 'Log In'}</Button>
+        </form>
+        <div className="mt-4 text-sm text-center">
+          Don&apos;t have an account? <Link href="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+        </div>
+      </Card>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/signup/page.tsx">
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+
+export default function SignupPage() {
+  const { signup } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    setLoading(true);
+    const { error } = await signup(email, password);
+    setLoading(false);
+    if (error) {
+      setError(error);
+    } else {
+      setSuccess('Check your email for confirmation link.');
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Card className="w-full max-w-md p-6">
+        <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {success && <div className="text-green-600 text-sm">{success}</div>}
+          <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Signing up...' : 'Sign Up'}</Button>
+        </form>
+        <div className="mt-4 text-sm text-center">
+          Already have an account? <Link href="/login" className="text-blue-600 hover:underline">Log in</Link>
+        </div>
+      </Card>
+    </div>
+  );
+}
+</file>
+
+<file path="src/contexts/AuthContext.tsx">
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createSupabaseBrowserClient } from '@/lib/supabaseBrowserClient';
+import { Session, User } from '@supabase/supabase-js';
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  signup: (email: string, password: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+      setIsLoading(false);
+    };
+    getSession();
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message || null };
+  };
+
+  const signup = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    return { error: error?.message || null };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, session, isLoading, login, signup, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};
+</file>
+
+<file path="src/lib/supabaseBrowserClient.ts">
+import { createBrowserClient } from '@supabase/ssr';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const createSupabaseBrowserClient = () =>
+  createBrowserClient(supabaseUrl, supabaseAnonKey);
+</file>
+
+<file path="src/middleware.ts">
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options });
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          response.cookies.set({ name, value: '', ...options });
+        },
+      },
+    }
+  );
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const protectedRoutes = ['/recently-read', '/wishlist'];
+  const authRoutes = ['/login', '/signup'];
+  const { pathname } = request.nextUrl;
+
+  if (!session && protectedRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (session && authRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.json|workbox-.*\\.js|icons/.*|public/.*).*)',
+  ],
+};
+</file>
+
+<file path="public/file.svg">
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+</file>
+
+<file path="public/globe.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+</file>
+
+<file path="public/manifest.json">
+{
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "app_name": "Book Tracker",
+  "short_name": "BookTracker",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+</file>
+
+<file path="public/next.svg">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+</file>
+
+<file path="public/vercel.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+</file>
+
+<file path="public/window.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="public/workbox-4754cb34.js">
+define(["exports"],(function(t){"use strict";try{self["workbox:core:6.5.4"]&&_()}catch(t){}const e=(t,...e)=>{let s=t;return e.length>0&&(s+=` :: ${JSON.stringify(e)}`),s};class s extends Error{constructor(t,s){super(e(t,s)),this.name=t,this.details=s}}try{self["workbox:routing:6.5.4"]&&_()}catch(t){}const n=t=>t&&"object"==typeof t?t:{handle:t};class r{constructor(t,e,s="GET"){this.handler=n(e),this.match=t,this.method=s}setCatchHandler(t){this.catchHandler=n(t)}}class i extends r{constructor(t,e,s){super((({url:e})=>{const s=t.exec(e.href);if(s&&(e.origin===location.origin||0===s.index))return s.slice(1)}),e,s)}}class a{constructor(){this.t=new Map,this.i=new Map}get routes(){return this.t}addFetchListener(){self.addEventListener("fetch",(t=>{const{request:e}=t,s=this.handleRequest({request:e,event:t});s&&t.respondWith(s)}))}addCacheListener(){self.addEventListener("message",(t=>{if(t.data&&"CACHE_URLS"===t.data.type){const{payload:e}=t.data,s=Promise.all(e.urlsToCache.map((e=>{"string"==typeof e&&(e=[e]);const s=new Request(...e);return this.handleRequest({request:s,event:t})})));t.waitUntil(s),t.ports&&t.ports[0]&&s.then((()=>t.ports[0].postMessage(!0)))}}))}handleRequest({request:t,event:e}){const s=new URL(t.url,location.href);if(!s.protocol.startsWith("http"))return;const n=s.origin===location.origin,{params:r,route:i}=this.findMatchingRoute({event:e,request:t,sameOrigin:n,url:s});let a=i&&i.handler;const o=t.method;if(!a&&this.i.has(o)&&(a=this.i.get(o)),!a)return;let c;try{c=a.handle({url:s,request:t,event:e,params:r})}catch(t){c=Promise.reject(t)}const h=i&&i.catchHandler;return c instanceof Promise&&(this.o||h)&&(c=c.catch((async n=>{if(h)try{return await h.handle({url:s,request:t,event:e,params:r})}catch(t){t instanceof Error&&(n=t)}if(this.o)return this.o.handle({url:s,request:t,event:e});throw n}))),c}findMatchingRoute({url:t,sameOrigin:e,request:s,event:n}){const r=this.t.get(s.method)||[];for(const i of r){let r;const a=i.match({url:t,sameOrigin:e,request:s,event:n});if(a)return r=a,(Array.isArray(r)&&0===r.length||a.constructor===Object&&0===Object.keys(a).length||"boolean"==typeof a)&&(r=void 0),{route:i,params:r}}return{}}setDefaultHandler(t,e="GET"){this.i.set(e,n(t))}setCatchHandler(t){this.o=n(t)}registerRoute(t){this.t.has(t.method)||this.t.set(t.method,[]),this.t.get(t.method).push(t)}unregisterRoute(t){if(!this.t.has(t.method))throw new s("unregister-route-but-not-found-with-method",{method:t.method});const e=this.t.get(t.method).indexOf(t);if(!(e>-1))throw new s("unregister-route-route-not-registered");this.t.get(t.method).splice(e,1)}}let o;const c=()=>(o||(o=new a,o.addFetchListener(),o.addCacheListener()),o);function h(t,e,n){let a;if("string"==typeof t){const s=new URL(t,location.href);a=new r((({url:t})=>t.href===s.href),e,n)}else if(t instanceof RegExp)a=new i(t,e,n);else if("function"==typeof t)a=new r(t,e,n);else{if(!(t instanceof r))throw new s("unsupported-route-type",{moduleName:"workbox-routing",funcName:"registerRoute",paramName:"capture"});a=t}return c().registerRoute(a),a}try{self["workbox:strategies:6.5.4"]&&_()}catch(t){}const u={cacheWillUpdate:async({response:t})=>200===t.status||0===t.status?t:null},l={googleAnalytics:"googleAnalytics",precache:"precache-v2",prefix:"workbox",runtime:"runtime",suffix:"undefined"!=typeof registration?registration.scope:""},f=t=>[l.prefix,t,l.suffix].filter((t=>t&&t.length>0)).join("-"),w=t=>t||f(l.precache),d=t=>t||f(l.runtime);function p(t,e){const s=new URL(t);for(const t of e)s.searchParams.delete(t);return s.href}class y{constructor(){this.promise=new Promise(((t,e)=>{this.resolve=t,this.reject=e}))}}const g=new Set;function m(t){return"string"==typeof t?new Request(t):t}class v{constructor(t,e){this.h={},Object.assign(this,e),this.event=e.event,this.u=t,this.l=new y,this.p=[],this.m=[...t.plugins],this.v=new Map;for(const t of this.m)this.v.set(t,{});this.event.waitUntil(this.l.promise)}async fetch(t){const{event:e}=this;let n=m(t);if("navigate"===n.mode&&e instanceof FetchEvent&&e.preloadResponse){const t=await e.preloadResponse;if(t)return t}const r=this.hasCallback("fetchDidFail")?n.clone():null;try{for(const t of this.iterateCallbacks("requestWillFetch"))n=await t({request:n.clone(),event:e})}catch(t){if(t instanceof Error)throw new s("plugin-error-request-will-fetch",{thrownErrorMessage:t.message})}const i=n.clone();try{let t;t=await fetch(n,"navigate"===n.mode?void 0:this.u.fetchOptions);for(const s of this.iterateCallbacks("fetchDidSucceed"))t=await s({event:e,request:i,response:t});return t}catch(t){throw r&&await this.runCallbacks("fetchDidFail",{error:t,event:e,originalRequest:r.clone(),request:i.clone()}),t}}async fetchAndCachePut(t){const e=await this.fetch(t),s=e.clone();return this.waitUntil(this.cachePut(t,s)),e}async cacheMatch(t){const e=m(t);let s;const{cacheName:n,matchOptions:r}=this.u,i=await this.getCacheKey(e,"read"),a=Object.assign(Object.assign({},r),{cacheName:n});s=await caches.match(i,a);for(const t of this.iterateCallbacks("cachedResponseWillBeUsed"))s=await t({cacheName:n,matchOptions:r,cachedResponse:s,request:i,event:this.event})||void 0;return s}async cachePut(t,e){const n=m(t);var r;await(r=0,new Promise((t=>setTimeout(t,r))));const i=await this.getCacheKey(n,"write");if(!e)throw new s("cache-put-with-no-response",{url:(a=i.url,new URL(String(a),location.href).href.replace(new RegExp(`^${location.origin}`),""))});var a;const o=await this.R(e);if(!o)return!1;const{cacheName:c,matchOptions:h}=this.u,u=await self.caches.open(c),l=this.hasCallback("cacheDidUpdate"),f=l?await async function(t,e,s,n){const r=p(e.url,s);if(e.url===r)return t.match(e,n);const i=Object.assign(Object.assign({},n),{ignoreSearch:!0}),a=await t.keys(e,i);for(const e of a)if(r===p(e.url,s))return t.match(e,n)}(u,i.clone(),["__WB_REVISION__"],h):null;try{await u.put(i,l?o.clone():o)}catch(t){if(t instanceof Error)throw"QuotaExceededError"===t.name&&await async function(){for(const t of g)await t()}(),t}for(const t of this.iterateCallbacks("cacheDidUpdate"))await t({cacheName:c,oldResponse:f,newResponse:o.clone(),request:i,event:this.event});return!0}async getCacheKey(t,e){const s=`${t.url} | ${e}`;if(!this.h[s]){let n=t;for(const t of this.iterateCallbacks("cacheKeyWillBeUsed"))n=m(await t({mode:e,request:n,event:this.event,params:this.params}));this.h[s]=n}return this.h[s]}hasCallback(t){for(const e of this.u.plugins)if(t in e)return!0;return!1}async runCallbacks(t,e){for(const s of this.iterateCallbacks(t))await s(e)}*iterateCallbacks(t){for(const e of this.u.plugins)if("function"==typeof e[t]){const s=this.v.get(e),n=n=>{const r=Object.assign(Object.assign({},n),{state:s});return e[t](r)};yield n}}waitUntil(t){return this.p.push(t),t}async doneWaiting(){let t;for(;t=this.p.shift();)await t}destroy(){this.l.resolve(null)}async R(t){let e=t,s=!1;for(const t of this.iterateCallbacks("cacheWillUpdate"))if(e=await t({request:this.request,response:e,event:this.event})||void 0,s=!0,!e)break;return s||e&&200!==e.status&&(e=void 0),e}}class R{constructor(t={}){this.cacheName=d(t.cacheName),this.plugins=t.plugins||[],this.fetchOptions=t.fetchOptions,this.matchOptions=t.matchOptions}handle(t){const[e]=this.handleAll(t);return e}handleAll(t){t instanceof FetchEvent&&(t={event:t,request:t.request});const e=t.event,s="string"==typeof t.request?new Request(t.request):t.request,n="params"in t?t.params:void 0,r=new v(this,{event:e,request:s,params:n}),i=this.q(r,s,e);return[i,this.D(i,r,s,e)]}async q(t,e,n){let r;await t.runCallbacks("handlerWillStart",{event:n,request:e});try{if(r=await this.U(e,t),!r||"error"===r.type)throw new s("no-response",{url:e.url})}catch(s){if(s instanceof Error)for(const i of t.iterateCallbacks("handlerDidError"))if(r=await i({error:s,event:n,request:e}),r)break;if(!r)throw s}for(const s of t.iterateCallbacks("handlerWillRespond"))r=await s({event:n,request:e,response:r});return r}async D(t,e,s,n){let r,i;try{r=await t}catch(i){}try{await e.runCallbacks("handlerDidRespond",{event:n,request:s,response:r}),await e.doneWaiting()}catch(t){t instanceof Error&&(i=t)}if(await e.runCallbacks("handlerDidComplete",{event:n,request:s,response:r,error:i}),e.destroy(),i)throw i}}function b(t){t.then((()=>{}))}function q(){return q=Object.assign?Object.assign.bind():function(t){for(var e=1;e<arguments.length;e++){var s=arguments[e];for(var n in s)({}).hasOwnProperty.call(s,n)&&(t[n]=s[n])}return t},q.apply(null,arguments)}let D,U;const x=new WeakMap,L=new WeakMap,I=new WeakMap,C=new WeakMap,E=new WeakMap;let N={get(t,e,s){if(t instanceof IDBTransaction){if("done"===e)return L.get(t);if("objectStoreNames"===e)return t.objectStoreNames||I.get(t);if("store"===e)return s.objectStoreNames[1]?void 0:s.objectStore(s.objectStoreNames[0])}return k(t[e])},set:(t,e,s)=>(t[e]=s,!0),has:(t,e)=>t instanceof IDBTransaction&&("done"===e||"store"===e)||e in t};function O(t){return t!==IDBDatabase.prototype.transaction||"objectStoreNames"in IDBTransaction.prototype?(U||(U=[IDBCursor.prototype.advance,IDBCursor.prototype.continue,IDBCursor.prototype.continuePrimaryKey])).includes(t)?function(...e){return t.apply(B(this),e),k(x.get(this))}:function(...e){return k(t.apply(B(this),e))}:function(e,...s){const n=t.call(B(this),e,...s);return I.set(n,e.sort?e.sort():[e]),k(n)}}function T(t){return"function"==typeof t?O(t):(t instanceof IDBTransaction&&function(t){if(L.has(t))return;const e=new Promise(((e,s)=>{const n=()=>{t.removeEventListener("complete",r),t.removeEventListener("error",i),t.removeEventListener("abort",i)},r=()=>{e(),n()},i=()=>{s(t.error||new DOMException("AbortError","AbortError")),n()};t.addEventListener("complete",r),t.addEventListener("error",i),t.addEventListener("abort",i)}));L.set(t,e)}(t),e=t,(D||(D=[IDBDatabase,IDBObjectStore,IDBIndex,IDBCursor,IDBTransaction])).some((t=>e instanceof t))?new Proxy(t,N):t);var e}function k(t){if(t instanceof IDBRequest)return function(t){const e=new Promise(((e,s)=>{const n=()=>{t.removeEventListener("success",r),t.removeEventListener("error",i)},r=()=>{e(k(t.result)),n()},i=()=>{s(t.error),n()};t.addEventListener("success",r),t.addEventListener("error",i)}));return e.then((e=>{e instanceof IDBCursor&&x.set(e,t)})).catch((()=>{})),E.set(e,t),e}(t);if(C.has(t))return C.get(t);const e=T(t);return e!==t&&(C.set(t,e),E.set(e,t)),e}const B=t=>E.get(t);const P=["get","getKey","getAll","getAllKeys","count"],M=["put","add","delete","clear"],W=new Map;function j(t,e){if(!(t instanceof IDBDatabase)||e in t||"string"!=typeof e)return;if(W.get(e))return W.get(e);const s=e.replace(/FromIndex$/,""),n=e!==s,r=M.includes(s);if(!(s in(n?IDBIndex:IDBObjectStore).prototype)||!r&&!P.includes(s))return;const i=async function(t,...e){const i=this.transaction(t,r?"readwrite":"readonly");let a=i.store;return n&&(a=a.index(e.shift())),(await Promise.all([a[s](...e),r&&i.done]))[0]};return W.set(e,i),i}N=(t=>q({},t,{get:(e,s,n)=>j(e,s)||t.get(e,s,n),has:(e,s)=>!!j(e,s)||t.has(e,s)}))(N);try{self["workbox:expiration:6.5.4"]&&_()}catch(t){}const S="cache-entries",K=t=>{const e=new URL(t,location.href);return e.hash="",e.href};class A{constructor(t){this._=null,this.L=t}I(t){const e=t.createObjectStore(S,{keyPath:"id"});e.createIndex("cacheName","cacheName",{unique:!1}),e.createIndex("timestamp","timestamp",{unique:!1})}C(t){this.I(t),this.L&&function(t,{blocked:e}={}){const s=indexedDB.deleteDatabase(t);e&&s.addEventListener("blocked",(t=>e(t.oldVersion,t))),k(s).then((()=>{}))}(this.L)}async setTimestamp(t,e){const s={url:t=K(t),timestamp:e,cacheName:this.L,id:this.N(t)},n=(await this.getDb()).transaction(S,"readwrite",{durability:"relaxed"});await n.store.put(s),await n.done}async getTimestamp(t){const e=await this.getDb(),s=await e.get(S,this.N(t));return null==s?void 0:s.timestamp}async expireEntries(t,e){const s=await this.getDb();let n=await s.transaction(S).store.index("timestamp").openCursor(null,"prev");const r=[];let i=0;for(;n;){const s=n.value;s.cacheName===this.L&&(t&&s.timestamp<t||e&&i>=e?r.push(n.value):i++),n=await n.continue()}const a=[];for(const t of r)await s.delete(S,t.id),a.push(t.url);return a}N(t){return this.L+"|"+K(t)}async getDb(){return this._||(this._=await function(t,e,{blocked:s,upgrade:n,blocking:r,terminated:i}={}){const a=indexedDB.open(t,e),o=k(a);return n&&a.addEventListener("upgradeneeded",(t=>{n(k(a.result),t.oldVersion,t.newVersion,k(a.transaction),t)})),s&&a.addEventListener("blocked",(t=>s(t.oldVersion,t.newVersion,t))),o.then((t=>{i&&t.addEventListener("close",(()=>i())),r&&t.addEventListener("versionchange",(t=>r(t.oldVersion,t.newVersion,t)))})).catch((()=>{})),o}("workbox-expiration",1,{upgrade:this.C.bind(this)})),this._}}class F{constructor(t,e={}){this.O=!1,this.T=!1,this.k=e.maxEntries,this.B=e.maxAgeSeconds,this.P=e.matchOptions,this.L=t,this.M=new A(t)}async expireEntries(){if(this.O)return void(this.T=!0);this.O=!0;const t=this.B?Date.now()-1e3*this.B:0,e=await this.M.expireEntries(t,this.k),s=await self.caches.open(this.L);for(const t of e)await s.delete(t,this.P);this.O=!1,this.T&&(this.T=!1,b(this.expireEntries()))}async updateTimestamp(t){await this.M.setTimestamp(t,Date.now())}async isURLExpired(t){if(this.B){const e=await this.M.getTimestamp(t),s=Date.now()-1e3*this.B;return void 0===e||e<s}return!1}async delete(){this.T=!1,await this.M.expireEntries(1/0)}}try{self["workbox:range-requests:6.5.4"]&&_()}catch(t){}async function H(t,e){try{if(206===e.status)return e;const n=t.headers.get("range");if(!n)throw new s("no-range-header");const r=function(t){const e=t.trim().toLowerCase();if(!e.startsWith("bytes="))throw new s("unit-must-be-bytes",{normalizedRangeHeader:e});if(e.includes(","))throw new s("single-range-only",{normalizedRangeHeader:e});const n=/(\d*)-(\d*)/.exec(e);if(!n||!n[1]&&!n[2])throw new s("invalid-range-values",{normalizedRangeHeader:e});return{start:""===n[1]?void 0:Number(n[1]),end:""===n[2]?void 0:Number(n[2])}}(n),i=await e.blob(),a=function(t,e,n){const r=t.size;if(n&&n>r||e&&e<0)throw new s("range-not-satisfiable",{size:r,end:n,start:e});let i,a;return void 0!==e&&void 0!==n?(i=e,a=n+1):void 0!==e&&void 0===n?(i=e,a=r):void 0!==n&&void 0===e&&(i=r-n,a=r),{start:i,end:a}}(i,r.start,r.end),o=i.slice(a.start,a.end),c=o.size,h=new Response(o,{status:206,statusText:"Partial Content",headers:e.headers});return h.headers.set("Content-Length",String(c)),h.headers.set("Content-Range",`bytes ${a.start}-${a.end-1}/${i.size}`),h}catch(t){return new Response("",{status:416,statusText:"Range Not Satisfiable"})}}function $(t,e){const s=e();return t.waitUntil(s),s}try{self["workbox:precaching:6.5.4"]&&_()}catch(t){}function z(t){if(!t)throw new s("add-to-cache-list-unexpected-type",{entry:t});if("string"==typeof t){const e=new URL(t,location.href);return{cacheKey:e.href,url:e.href}}const{revision:e,url:n}=t;if(!n)throw new s("add-to-cache-list-unexpected-type",{entry:t});if(!e){const t=new URL(n,location.href);return{cacheKey:t.href,url:t.href}}const r=new URL(n,location.href),i=new URL(n,location.href);return r.searchParams.set("__WB_REVISION__",e),{cacheKey:r.href,url:i.href}}class G{constructor(){this.updatedURLs=[],this.notUpdatedURLs=[],this.handlerWillStart=async({request:t,state:e})=>{e&&(e.originalRequest=t)},this.cachedResponseWillBeUsed=async({event:t,state:e,cachedResponse:s})=>{if("install"===t.type&&e&&e.originalRequest&&e.originalRequest instanceof Request){const t=e.originalRequest.url;s?this.notUpdatedURLs.push(t):this.updatedURLs.push(t)}return s}}}class V{constructor({precacheController:t}){this.cacheKeyWillBeUsed=async({request:t,params:e})=>{const s=(null==e?void 0:e.cacheKey)||this.W.getCacheKeyForURL(t.url);return s?new Request(s,{headers:t.headers}):t},this.W=t}}let J,Q;async function X(t,e){let n=null;if(t.url){n=new URL(t.url).origin}if(n!==self.location.origin)throw new s("cross-origin-copy-response",{origin:n});const r=t.clone(),i={headers:new Headers(r.headers),status:r.status,statusText:r.statusText},a=e?e(i):i,o=function(){if(void 0===J){const t=new Response("");if("body"in t)try{new Response(t.body),J=!0}catch(t){J=!1}J=!1}return J}()?r.body:await r.blob();return new Response(o,a)}class Y extends R{constructor(t={}){t.cacheName=w(t.cacheName),super(t),this.j=!1!==t.fallbackToNetwork,this.plugins.push(Y.copyRedirectedCacheableResponsesPlugin)}async U(t,e){const s=await e.cacheMatch(t);return s||(e.event&&"install"===e.event.type?await this.S(t,e):await this.K(t,e))}async K(t,e){let n;const r=e.params||{};if(!this.j)throw new s("missing-precache-entry",{cacheName:this.cacheName,url:t.url});{const s=r.integrity,i=t.integrity,a=!i||i===s;n=await e.fetch(new Request(t,{integrity:"no-cors"!==t.mode?i||s:void 0})),s&&a&&"no-cors"!==t.mode&&(this.A(),await e.cachePut(t,n.clone()))}return n}async S(t,e){this.A();const n=await e.fetch(t);if(!await e.cachePut(t,n.clone()))throw new s("bad-precaching-response",{url:t.url,status:n.status});return n}A(){let t=null,e=0;for(const[s,n]of this.plugins.entries())n!==Y.copyRedirectedCacheableResponsesPlugin&&(n===Y.defaultPrecacheCacheabilityPlugin&&(t=s),n.cacheWillUpdate&&e++);0===e?this.plugins.push(Y.defaultPrecacheCacheabilityPlugin):e>1&&null!==t&&this.plugins.splice(t,1)}}Y.defaultPrecacheCacheabilityPlugin={cacheWillUpdate:async({response:t})=>!t||t.status>=400?null:t},Y.copyRedirectedCacheableResponsesPlugin={cacheWillUpdate:async({response:t})=>t.redirected?await X(t):t};class Z{constructor({cacheName:t,plugins:e=[],fallbackToNetwork:s=!0}={}){this.F=new Map,this.H=new Map,this.$=new Map,this.u=new Y({cacheName:w(t),plugins:[...e,new V({precacheController:this})],fallbackToNetwork:s}),this.install=this.install.bind(this),this.activate=this.activate.bind(this)}get strategy(){return this.u}precache(t){this.addToCacheList(t),this.G||(self.addEventListener("install",this.install),self.addEventListener("activate",this.activate),this.G=!0)}addToCacheList(t){const e=[];for(const n of t){"string"==typeof n?e.push(n):n&&void 0===n.revision&&e.push(n.url);const{cacheKey:t,url:r}=z(n),i="string"!=typeof n&&n.revision?"reload":"default";if(this.F.has(r)&&this.F.get(r)!==t)throw new s("add-to-cache-list-conflicting-entries",{firstEntry:this.F.get(r),secondEntry:t});if("string"!=typeof n&&n.integrity){if(this.$.has(t)&&this.$.get(t)!==n.integrity)throw new s("add-to-cache-list-conflicting-integrities",{url:r});this.$.set(t,n.integrity)}if(this.F.set(r,t),this.H.set(r,i),e.length>0){const t=`Workbox is precaching URLs without revision info: ${e.join(", ")}\nThis is generally NOT safe. Learn more at https://bit.ly/wb-precache`;console.warn(t)}}}install(t){return $(t,(async()=>{const e=new G;this.strategy.plugins.push(e);for(const[e,s]of this.F){const n=this.$.get(s),r=this.H.get(e),i=new Request(e,{integrity:n,cache:r,credentials:"same-origin"});await Promise.all(this.strategy.handleAll({params:{cacheKey:s},request:i,event:t}))}const{updatedURLs:s,notUpdatedURLs:n}=e;return{updatedURLs:s,notUpdatedURLs:n}}))}activate(t){return $(t,(async()=>{const t=await self.caches.open(this.strategy.cacheName),e=await t.keys(),s=new Set(this.F.values()),n=[];for(const r of e)s.has(r.url)||(await t.delete(r),n.push(r.url));return{deletedURLs:n}}))}getURLsToCacheKeys(){return this.F}getCachedURLs(){return[...this.F.keys()]}getCacheKeyForURL(t){const e=new URL(t,location.href);return this.F.get(e.href)}getIntegrityForCacheKey(t){return this.$.get(t)}async matchPrecache(t){const e=t instanceof Request?t.url:t,s=this.getCacheKeyForURL(e);if(s){return(await self.caches.open(this.strategy.cacheName)).match(s)}}createHandlerBoundToURL(t){const e=this.getCacheKeyForURL(t);if(!e)throw new s("non-precached-url",{url:t});return s=>(s.request=new Request(t),s.params=Object.assign({cacheKey:e},s.params),this.strategy.handle(s))}}const tt=()=>(Q||(Q=new Z),Q);class et extends r{constructor(t,e){super((({request:s})=>{const n=t.getURLsToCacheKeys();for(const r of function*(t,{ignoreURLParametersMatching:e=[/^utm_/,/^fbclid$/],directoryIndex:s="index.html",cleanURLs:n=!0,urlManipulation:r}={}){const i=new URL(t,location.href);i.hash="",yield i.href;const a=function(t,e=[]){for(const s of[...t.searchParams.keys()])e.some((t=>t.test(s)))&&t.searchParams.delete(s);return t}(i,e);if(yield a.href,s&&a.pathname.endsWith("/")){const t=new URL(a.href);t.pathname+=s,yield t.href}if(n){const t=new URL(a.href);t.pathname+=".html",yield t.href}if(r){const t=r({url:i});for(const e of t)yield e.href}}(s.url,e)){const e=n.get(r);if(e){return{cacheKey:e,integrity:t.getIntegrityForCacheKey(e)}}}}),t.strategy)}}t.CacheFirst=class extends R{async U(t,e){let n,r=await e.cacheMatch(t);if(!r)try{r=await e.fetchAndCachePut(t)}catch(t){t instanceof Error&&(n=t)}if(!r)throw new s("no-response",{url:t.url,error:n});return r}},t.ExpirationPlugin=class{constructor(t={}){this.cachedResponseWillBeUsed=async({event:t,request:e,cacheName:s,cachedResponse:n})=>{if(!n)return null;const r=this.V(n),i=this.J(s);b(i.expireEntries());const a=i.updateTimestamp(e.url);if(t)try{t.waitUntil(a)}catch(t){}return r?n:null},this.cacheDidUpdate=async({cacheName:t,request:e})=>{const s=this.J(t);await s.updateTimestamp(e.url),await s.expireEntries()},this.X=t,this.B=t.maxAgeSeconds,this.Y=new Map,t.purgeOnQuotaError&&function(t){g.add(t)}((()=>this.deleteCacheAndMetadata()))}J(t){if(t===d())throw new s("expire-custom-caches-only");let e=this.Y.get(t);return e||(e=new F(t,this.X),this.Y.set(t,e)),e}V(t){if(!this.B)return!0;const e=this.Z(t);if(null===e)return!0;return e>=Date.now()-1e3*this.B}Z(t){if(!t.headers.has("date"))return null;const e=t.headers.get("date"),s=new Date(e).getTime();return isNaN(s)?null:s}async deleteCacheAndMetadata(){for(const[t,e]of this.Y)await self.caches.delete(t),await e.delete();this.Y=new Map}},t.NetworkFirst=class extends R{constructor(t={}){super(t),this.plugins.some((t=>"cacheWillUpdate"in t))||this.plugins.unshift(u),this.tt=t.networkTimeoutSeconds||0}async U(t,e){const n=[],r=[];let i;if(this.tt){const{id:s,promise:a}=this.et({request:t,logs:n,handler:e});i=s,r.push(a)}const a=this.st({timeoutId:i,request:t,logs:n,handler:e});r.push(a);const o=await e.waitUntil((async()=>await e.waitUntil(Promise.race(r))||await a)());if(!o)throw new s("no-response",{url:t.url});return o}et({request:t,logs:e,handler:s}){let n;return{promise:new Promise((e=>{n=setTimeout((async()=>{e(await s.cacheMatch(t))}),1e3*this.tt)})),id:n}}async st({timeoutId:t,request:e,logs:s,handler:n}){let r,i;try{i=await n.fetchAndCachePut(e)}catch(t){t instanceof Error&&(r=t)}return t&&clearTimeout(t),!r&&i||(i=await n.cacheMatch(e)),i}},t.RangeRequestsPlugin=class{constructor(){this.cachedResponseWillBeUsed=async({request:t,cachedResponse:e})=>e&&t.headers.has("range")?await H(t,e):e}},t.StaleWhileRevalidate=class extends R{constructor(t={}){super(t),this.plugins.some((t=>"cacheWillUpdate"in t))||this.plugins.unshift(u)}async U(t,e){const n=e.fetchAndCachePut(t).catch((()=>{}));e.waitUntil(n);let r,i=await e.cacheMatch(t);if(i);else try{i=await n}catch(t){t instanceof Error&&(r=t)}if(!i)throw new s("no-response",{url:t.url,error:r});return i}},t.cleanupOutdatedCaches=function(){self.addEventListener("activate",(t=>{const e=w();t.waitUntil((async(t,e="-precache-")=>{const s=(await self.caches.keys()).filter((s=>s.includes(e)&&s.includes(self.registration.scope)&&s!==t));return await Promise.all(s.map((t=>self.caches.delete(t)))),s})(e).then((t=>{})))}))},t.clientsClaim=function(){self.addEventListener("activate",(()=>self.clients.claim()))},t.precacheAndRoute=function(t,e){!function(t){tt().precache(t)}(t),function(t){const e=tt();h(new et(e,t))}(e)},t.registerRoute=h}));
+</file>
+
+<file path="src/components/ui/button.tsx">
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline:
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost:
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }) {
+  const Comp = asChild ? Slot : "button"
+
+  return (
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+
+export { Button, buttonVariants }
+</file>
+
+<file path="src/components/ui/card.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-2 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  )
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+}
+</file>
+
+<file path="src/components/ui/input.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Input }
+</file>
+
+<file path="src/components/ui/label.tsx">
+"use client"
+
+import * as React from "react"
+import * as LabelPrimitive from "@radix-ui/react-label"
+
+import { cn } from "@/lib/utils"
+
+function Label({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return (
+    <LabelPrimitive.Root
+      data-slot="label"
+      className={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Label }
+</file>
+
+<file path="src/components/ui/select.tsx">
+"use client"
+
+import * as React from "react"
+import * as SelectPrimitive from "@radix-ui/react-select"
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+function Select({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  return <SelectPrimitive.Root data-slot="select" {...props} />
+}
+
+function SelectGroup({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Group>) {
+  return <SelectPrimitive.Group data-slot="select-group" {...props} />
+}
+
+function SelectValue({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+}
+
+function SelectTrigger({
+  className,
+  size = "default",
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
+  size?: "sm" | "default"
+}) {
+  return (
+    <SelectPrimitive.Trigger
+      data-slot="select-trigger"
+      data-size={size}
+      className={cn(
+        "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDownIcon className="size-4 opacity-50" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  )
+}
+
+function SelectContent({
+  className,
+  children,
+  position = "popper",
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  return (
+    <SelectPrimitive.Portal>
+      <SelectPrimitive.Content
+        data-slot="select-content"
+        className={cn(
+          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+          position === "popper" &&
+            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          className
+        )}
+        position={position}
+        {...props}
+      >
+        <SelectScrollUpButton />
+        <SelectPrimitive.Viewport
+          className={cn(
+            "p-1",
+            position === "popper" &&
+              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+          )}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  )
+}
+
+function SelectLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Label>) {
+  return (
+    <SelectPrimitive.Label
+      data-slot="select-label"
+      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      {...props}
+    />
+  )
+}
+
+function SelectItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  return (
+    <SelectPrimitive.Item
+      data-slot="select-item"
+      className={cn(
+        "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        className
+      )}
+      {...props}
+    >
+      <span className="absolute right-2 flex size-3.5 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <CheckIcon className="size-4" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  )
+}
+
+function SelectSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Separator>) {
+  return (
+    <SelectPrimitive.Separator
+      data-slot="select-separator"
+      className={cn("bg-border pointer-events-none -mx-1 my-1 h-px", className)}
+      {...props}
+    />
+  )
+}
+
+function SelectScrollUpButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>) {
+  return (
+    <SelectPrimitive.ScrollUpButton
+      data-slot="select-scroll-up-button"
+      className={cn(
+        "flex cursor-default items-center justify-center py-1",
+        className
+      )}
+      {...props}
+    >
+      <ChevronUpIcon className="size-4" />
+    </SelectPrimitive.ScrollUpButton>
+  )
+}
+
+function SelectScrollDownButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>) {
+  return (
+    <SelectPrimitive.ScrollDownButton
+      data-slot="select-scroll-down-button"
+      className={cn(
+        "flex cursor-default items-center justify-center py-1",
+        className
+      )}
+      {...props}
+    >
+      <ChevronDownIcon className="size-4" />
+    </SelectPrimitive.ScrollDownButton>
+  )
+}
+
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+}
+</file>
+
+<file path="src/components/ui/skeleton.tsx">
+import { cn } from "@/lib/utils"
+
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="skeleton"
+      className={cn("bg-accent animate-pulse rounded-md", className)}
+      {...props}
+    />
+  )
+}
+
+export { Skeleton }
+</file>
+
+<file path="src/components/ui/textarea.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Textarea }
+</file>
+
+<file path="src/lib/supabase.ts">
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase URL or Anon Key environment variables.');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+</file>
+
+<file path="src/lib/utils.ts">
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+</file>
+
+<file path="src/translations/i18n.ts">
+import en from './en.json';
+import es from './es.json';
+
+const translations = {
+  en,
+  es,
+};
+
+export const getTranslations = (locale: string) => {
+  return translations[locale as keyof typeof translations] || translations.en;
+};
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="components.json">
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide"
+}
+</file>
+
+<file path="eslint.config.mjs">
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+];
+
+export default eslintConfig;
+</file>
+
+<file path="postcss.config.mjs">
+const config = {
+  plugins: ["@tailwindcss/postcss"],
+};
+
+export default config;
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</file>
+
+<file path="tailwind.config.ts">
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+
+const config = {
+  darkMode: "class",
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [tailwindcssAnimate],
+} satisfies Config;
+
+export default config;
+</file>
+
+<file path="src/app/api/entries/route.ts">
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies as getCookies } from 'next/headers';
+import type { CookieOptions } from '@supabase/ssr';
+
+// Helper to adapt the cookies() API to the interface expected by Supabase SSR
+async function getSupabaseCookies() {
+  const cookieStore = await getCookies();
+  return {
+    get(name: string) {
+      return cookieStore.get(name)?.value;
+    },
+    set(name: string, value: string, options: CookieOptions) {
+      // Not needed for API route context
+    },
+    remove(name: string, options: CookieOptions) {
+      // Not needed for API route context
+    },
+  };
+}
+
+// Handle GET requests to fetch entries
+export async function GET(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  let query = supabase.from('entries').select('*').eq('user_id', user.id);
+
+  if (id) {
+    query = query.eq('id', id);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching entries:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}
+
+// Handle POST requests to add a new entry
+export async function POST(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const {
+    title,
+    author,
+    recommended,
+    rating,
+    formato,
+    pageNumber,
+    startDate,
+    endDate,
+    favCharacter,
+    hatedCharacter,
+    ratingDetails,
+    genre,
+    favPhrases,
+    review,
+  } = await request.json();
+
+  // Basic validation (title and author are required based on table schema)
+  if (!title || !author) {
+    return NextResponse.json({ error: 'Title and author are required' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase.from('entries').insert([{
+    user_id: user.id, // Associate entry with user_id
+    title,
+    author,
+    recommended,
+    rating,
+    formato,
+    page_number: pageNumber, // Map camelCase to snake_case for DB column
+    start_date: startDate,   // Map camelCase to snake_case for DB column
+    end_date: endDate,       // Map camelCase to snake_case for DB column
+    fav_character: favCharacter, // Map camelCase to snake_case for DB column
+    hated_character: hatedCharacter, // Map camelCase to snake_case for DB column
+    rating_details: ratingDetails, // JSONB column
+    genre,
+    fav_phrases: favPhrases, // JSONB column
+    review,
+  }]).select();
+
+  if (error) {
+    console.error('Error adding entry:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data, { status: 201 });
+}
+
+// Handle DELETE requests to remove an entry
+export async function DELETE(request: Request) {
+  const cookies = await getSupabaseCookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await request.json();
+
+  if (!id) {
+    return NextResponse.json({ error: 'Entry ID is required' }, { status: 400 });
+  }
+
+  const { error } = await supabase.from('entries').delete().eq('id', id).eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error deleting entry:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'Entry deleted successfully' }, { status: 200 });
+}
+</file>
+
+<file path="src/app/api/wishlist/route.ts">
+import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+
+// Handle GET requests to fetch wishlist items
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  let query = supabase.from('items').select('*');
+
+  console.log(id)
+
+  if (id) {
+    query = query.eq('id', id);
+  }
+
+  const { data, error } = await query;
+
+
+  if (error) {
+    console.error('Error fetching wishlist items:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}
+
+// Handle POST requests to add a new wishlist item
+export async function POST(request: Request) {
+  const { title, author, note } = await request.json();
+
+  // Basic validation
+  if (!title || !author) {
+    return NextResponse.json({ error: 'Title and author are required' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase.from('items').insert([{ title, author, note }]);
+
+  if (error) {
+    console.error('Error adding wishlist item:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data, { status: 201 });
+}
+
+// Handle DELETE requests to remove a wishlist item
+export async function DELETE(request: Request) {
+  const { id } = await request.json();
+
+  if (!id) {
+    return NextResponse.json({ error: 'Item ID is required' }, { status: 400 });
+  }
+
+  const { error } = await supabase.from('items').delete().eq('id', id);
+
+  if (error) {
+    console.error('Error deleting wishlist item:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
+}
+</file>
+
+<file path="src/app/globals.css">
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+</file>
+
+<file path="src/components/breadcrumb.tsx">
+"use client";
+
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { useTranslation } from "@/translations/TranslationContext";
+
+interface BreadcrumbProps {
+  itemName?: string; // Optional prop for the name of the current item
+}
+
+export default function Breadcrumb({ itemName }: BreadcrumbProps) {
+  const { t } = useTranslation();
+  const pathname = usePathname();
+  const pathSegments = pathname.split('/').filter(segment => segment !== '');
+
+  return (
+    <nav className="mb-4 text-sm text-gray-600">
+      <Link href="/" className="hover:underline">{t('home')}</Link>
+      {pathSegments.map((segment, index) => {
+        const href = '/' + pathSegments.slice(0, index + 1).join('/');
+        const isLast = index === pathSegments.length - 1;
+        // Use segment as key for translation
+        const translatedSegment = t(segment);
+        const displayName = translatedSegment === segment ? segment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : translatedSegment; // Basic formatting or translated text
+
+        return (
+          <span key={href}>
+            <span className="mx-1">/</span>
+            {isLast ? (
+              <span>{itemName || displayName}</span> // Use itemName if provided, otherwise format segment
+            ) : (
+              <Link href={href} className="hover:underline">{displayName}</Link>
+            )}
+          </span>
+        );
+      })}
+    </nav>
+  );
+}
+</file>
+
+<file path="src/components/theme-provider.tsx">
+"use client"
+
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
+export function ThemeProvider({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}
+</file>
+
+<file path="src/translations/en.json">
+{
+  "hello": "Hello",
+  "welcome": "Welcome to the application!",
+  "greeting": "Hi, Patricia 👋",
+  "error": "Error",
+  "recentlyRead": "Recently Read",
+  "viewAll": "View All",
+  "wishlist": "Wishlist",
+  "allRecentlyReadBooks": "All Recently Read Books",
+  "cancel": "Cancel",
+  "addNewBook": "Add New Book",
+  "addNewRecentlyReadBook": "Add New Recently Read Book",
+  "title": "Title",
+  "author": "Author",
+  "recommended": "Recommended",
+  "overallRating": "Overall Rating",
+  "format": "Format",
+  "selectFormat": "Select format",
+  "digital": "Digital",
+  "physical": "Physical",
+  "both": "Both",
+  "pageNumber": "Page Number",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "favoriteCharacter": "Favorite Character",
+  "hatedCharacter": "Hated Character",
+  "genre": "Genre",
+  "favoritePhrases": "Favorite Phrases (comma-separated)",
+  "review": "Review",
+  "detailedRatings": "Detailed Ratings",
+  "romance": "Romance",
+  "sadness": "Sadness",
+  "spicy": "Spicy",
+  "final": "Final",
+  "addBook": "Add Book",
+  "backToHome": "Back to Home",
+  "titleAuthorRequired": "Title and Author are required.",
+  "failedToAddBook": "Failed to add book",
+  "errorAddingEntry": "Error adding entry:",
+  "errorDeletingEntry": "Error deleting entry:",
+  "failedToDeleteBook": "Failed to delete book",
+  "unknownError": "An unknown error occurred",
+  "bookDetails": "Book Details",
+  "yes": "Yes",
+  "no": "No",
+  "backToRecentlyRead": "Back to Recently Read",
+  "delete": "Delete",
+  "bookNotFound": "Book not found",
+  "errorFetchingEntry": "Error fetching entry:",
+  "errorDeletingBook": "Error deleting book:",
+  "allWishlistBooks": "All Wishlist Books",
+  "addNewWishlistBook": "Add New Wishlist Book",
+  "note": "Note",
+  "errorFetchingWishlist": "Error fetching wishlist:",
+  "errorAddingWishlistItem": "Error adding wishlist item:",
+  "errorDeletingWishlistItem": "Error deleting wishlist item:",
+  "wishlistItemDetails": "Wishlist Item Details",
+  "backToWishlist": "Back to Wishlist",
+  "wishlistItemNotFound": "Wishlist item not found",
+  "failedToDeleteItem": "Failed to delete item",
+  "home": "Home",
+  "recently-read": "Recently Read",
+  "separatePhrasesWithCommas": "Separate phrases with commas",
+  "formatDigital": "Digital",
+  "formatPhysical": "Physical",
+  "formatBoth": "Physical and Digital"
+}
+</file>
+
+<file path="src/translations/TranslationContext.tsx">
+'use client';
+
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getTranslations } from './i18n';
+
+interface TranslationContextType {
+  locale: string;
+  setLocale: (locale: string) => void;
+  t: (key: string) => string;
+}
+
+const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
+
+const LOCAL_STORAGE_LOCALE_KEY = 'app_locale';
+
+export const TranslationProvider = ({ children }: { children: ReactNode }) => {
+  const [locale, setLocaleState] = useState('en'); // Default to English
+  const translations = getTranslations(locale);
+
+  useEffect(() => {
+    // Check local storage first
+    const savedLocale = localStorage.getItem(LOCAL_STORAGE_LOCALE_KEY);
+    if (savedLocale) {
+      setLocaleState(savedLocale);
+    } else if (typeof navigator !== 'undefined') {
+      // Detect browser language if no saved locale
+      const browserLanguage = navigator.language.split('-')[0];
+      const supportedLocales = Object.keys(translations);
+      if (supportedLocales.includes(browserLanguage)) {
+        setLocaleState(browserLanguage);
+      }
+    }
+  }, [translations]); // Run only once on mount
+
+  const setLocale = (newLocale: string) => {
+    setLocaleState(newLocale);
+    localStorage.setItem(LOCAL_STORAGE_LOCALE_KEY, newLocale);
+  };
+
+  const t = (key: string) => {
+    return translations[key as keyof typeof translations] || key;
+  };
+
+  return (
+    <TranslationContext.Provider value={{ locale, setLocale, t }}>
+      {children}
+    </TranslationContext.Provider>
+  );
+};
+
+export const useTranslation = () => {
+  const context = useContext(TranslationContext);
+  if (context === undefined) {
+    throw new Error('useTranslation must be used within a TranslationProvider');
+  }
+  return context;
+};
+</file>
+
+<file path="src/app/wishlist/[itemId]/page.tsx">
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from "@/translations/TranslationContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+
+// Define interface for wishlist item data (matching the 'items' table structure)
+interface WishlistItem {
+  id: number;
+  title: string;
+  author: string;
+  note: string | null;
+}
+
+export default function WishlistItemPage() {
+  const { t } = useTranslation();
+  const params = useParams();
+  const router = useRouter();
+  const itemId = parseInt(params.itemId as string, 10);
+
+  const [item, setItem] = useState<WishlistItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch the specific wishlist item by ID
+        const response = await fetch(`/api/wishlist?id=${itemId}`);
+        if (!response.ok) {
+          throw new Error(`Error fetching wishlist item: ${response.statusText}`);
+        }
+        const data: WishlistItem[] = await response.json();
+        if (data.length > 0) {
+          setItem(data[0]); // Assuming the API returns an array with one item
+        } else {
+          setItem(null); // Item not found
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorFetchingWishlistItem'), err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (itemId) {
+      fetchItem();
+    }
+  }, [itemId, t]); // Refetch when itemId changes
+
+  const handleDeleteItem = async () => {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: itemId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting wishlist item: ${response.statusText}`);
+      }
+
+      // Navigate back to the wishlist after successful deletion
+      router.push('/wishlist');
+
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorDeletingWishlistItem'), err);
+        alert(`${t('failedToDeleteItem')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+    }
+  };
+
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <Skeleton className="h-8 w-1/2 mb-8" /> {/* Title skeleton */}
+        <Card className="border-none shadow-md py-6">
+          <CardHeader>
+            <Skeleton className="h-7 w-3/4 mb-2" /> {/* Item Title skeleton */}
+            <Skeleton className="h-4 w-1/2" /> {/* Author skeleton */}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-20 w-full" /> {/* Note skeleton */}
+          </CardContent>
+        </Card>
+        <div className="mt-8 flex justify-between">
+          <Skeleton className="h-10 w-32" /> {/* Back button skeleton */}
+          <Skeleton className="h-10 w-24" /> {/* Delete button skeleton */}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="container mx-auto py-8 px-4 text-red-500">{t('error')}: {error}</div>;
+  }
+
+  if (!item) {
+    return <div className="container mx-auto py-8 px-4">{t('wishlistItemNotFound')}</div>;
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Breadcrumb itemName={item?.title} /> {/* Add Breadcrumb component and pass item name */}
+      <h1 className="text-2xl font-semibold mb-8">{t('wishlistItemDetails')}</h1>
+
+      <Card className="border-none shadow-md py-6">
+        <CardHeader>
+          <CardTitle>{item.title}</CardTitle>
+          <p className="text-sm text-gray-600">{item.author}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {item.note && <p><strong>{t('note')}:</strong> {item.note}</p>}
+        </CardContent>
+      </Card>
+
+      <div className="mt-8 flex justify-between">
+        <Link href="/wishlist">
+          <Button variant="outline">{t('backToWishlist')}</Button>
+        </Link>
+        <Button variant="destructive" onClick={handleDeleteItem}>
+          {t('delete')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/language-switcher.tsx">
+'use client';
+
+import { useTranslation } from "@/translations/TranslationContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
+
+export default function LanguageSwitcher() {
+  const { locale, setLocale } = useTranslation();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Select onValueChange={(value) => setLocale(value)} value={locale}>
+        <SelectTrigger className="w-[100px]">
+          <SelectValue placeholder="Language" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">English</SelectItem>
+          <SelectItem value="es">Español</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      >
+        {theme === "light" ? "☀️" : "🌙"}
+      </Button>
+      {user ? (
+        <Button variant="outline" onClick={logout} className="ml-2">Logout</Button>
+      ) : (
+        <>
+          <Link href="/login" className="ml-2"><Button variant="outline">Login</Button></Link>
+          <Link href="/signup" className="ml-2"><Button variant="outline">Sign Up</Button></Link>
+        </>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="src/translations/es.json">
+{
+  "hello": "Hola",
+  "welcome": "¡Bienvenido a la aplicación!",
+  "greeting": "Hola, Patricia 👋",
+  "error": "Error",
+  "recentlyRead": "Leído recientemente",
+  "viewAll": "Ver todo",
+  "wishlist": "Lista de deseos",
+  "allRecentlyReadBooks": "Todos los libros leídos recientemente",
+  "cancel": "Cancelar",
+  "addNewBook": "Agregar nuevo libro",
+  "addNewRecentlyReadBook": "Agregar nuevo libro leído recientemente",
+  "title": "Título",
+  "author": "Autor",
+  "recommended": "Recomendado",
+  "overallRating": "Calificación general",
+  "format": "Formato",
+  "selectFormat": "Seleccionar formato",
+  "digital": "Digital",
+  "physical": "Físico",
+  "both": "Ambos",
+  "pageNumber": "Número de páginas",
+  "startDate": "Fecha de inicio",
+  "endDate": "Fecha de finalización",
+  "favoriteCharacter": "Personaje favorito",
+  "hatedCharacter": "Personaje odiado",
+  "genre": "Género",
+  "favoritePhrases": "Frases favoritas (separadas por comas)",
+  "review": "Reseña",
+  "detailedRatings": "Calificaciones detalladas",
+  "romance": "Romance",
+  "sadness": "Tristeza",
+  "spicy": "Picante",
+  "final": "Final",
+  "addBook": "Agregar libro",
+  "backToHome": "Volver a inicio",
+  "titleAuthorRequired": "El título y el autor son obligatorios.",
+  "failedToAddBook": "Error al agregar libro",
+  "errorAddingEntry": "Error al agregar entrada:",
+  "errorDeletingEntry": "Error al eliminar entrada:",
+  "failedToDeleteBook": "Error al eliminar libro",
+  "unknownError": "Ocurrió un error desconocido",
+  "bookDetails": "Detalles del libro",
+  "yes": "Sí",
+  "no": "No",
+  "backToRecentlyRead": "Volver a Leído recientemente",
+  "delete": "Eliminar",
+  "bookNotFound": "Libro no encontrado",
+  "errorFetchingEntry": "Error al obtener entrada:",
+  "errorDeletingBook": "Error al eliminar libro:",
+  "allWishlistBooks": "Todos los libros de la lista de deseos",
+  "addNewWishlistBook": "Agregar nuevo libro a la lista de deseos",
+  "note": "Nota",
+  "errorFetchingWishlist": "Error al obtener la lista de deseos:",
+  "errorAddingWishlistItem": "Error al agregar elemento a la lista de deseos:",
+  "errorDeletingWishlistItem": "Error al eliminar elemento de la lista de deseos:",
+  "wishlistItemDetails": "Detalles del elemento de la lista de deseos",
+  "backToWishlist": "Volver a la lista de deseos",
+  "wishlistItemNotFound": "Elemento de la lista de deseos no encontrado",
+  "failedToDeleteItem": "Error al eliminar elemento",
+  "home": "Inicio",
+  "recently-read": "Leído recientemente",
+  "separatePhrasesWithCommas": "Separa las frases con comas",
+  "formatDigital": "Digital",
+  "formatPhysical": "Físico",
+  "formatBoth": "Físico y Digital"
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "typeRoots": ["./node_modules/@types"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="public/sw.js">
+if(!self.define){let e,s={};const c=(c,n)=>(c=new URL(c+".js",n).href,s[c]||new Promise((s=>{if("document"in self){const e=document.createElement("script");e.src=c,e.onload=s,document.head.appendChild(e)}else e=c,importScripts(c),s()})).then((()=>{let e=s[c];if(!e)throw new Error(`Module ${c} didn’t register its module`);return e})));self.define=(n,t)=>{const i=e||("document"in self?document.currentScript.src:"")||location.href;if(s[i])return;let a={};const f=e=>c(e,i),r={module:{uri:i},exports:a,require:f};s[i]=Promise.all(n.map((e=>r[e]||f(e)))).then((e=>(t(...e),a)))}}define(["./workbox-4754cb34"],(function(e){"use strict";importScripts(),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/_next/app-build-manifest.json",revision:"7057893a484c6a3c9475ecc11f0beb6f"},{url:"/_next/static/chunks/4bd1b696-7dc8cdfcb31f2b2e.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/503-3153cb7cc8ebcf27.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/684-ce9c2b63bf12b149.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/868-e0dcf5b56e7d579e.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/87-629241c4460ca635.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/8e1d74a4-ef71d88d76fef66b.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/943-e26eafc8ad5db68c.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/_not-found/page-a759c00a697ce432.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/api/entries/route-577fd89d05f9c949.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/api/wishlist/route-7803f8908a186ff3.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/layout-fcf3ae0c9059a02f.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/page-1fc5ef500b24eb6e.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/recently-read/%5BbookId%5D/page-48760c1c1433ed6c.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/recently-read/page-afab940a392e770a.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/wishlist/%5BitemId%5D/page-e4b67a615a3ffa65.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/app/wishlist/page-383ae19260cb589c.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/framework-f593a28cde54158e.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/main-1964cc3b2bd7d260.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/main-app-e8b29b0eb45fd47e.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/pages/_app-da15c11dea942c36.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/pages/_error-cc3f077a18ea1793.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-d8919d613a4364e2.js",revision:"m8Utw_jQzi9cffN27Ccdn"},{url:"/_next/static/css/75cea329135a8cbe.css",revision:"75cea329135a8cbe"},{url:"/_next/static/css/c7c36f57a04ca8c8.css",revision:"c7c36f57a04ca8c8"},{url:"/_next/static/m8Utw_jQzi9cffN27Ccdn/_buildManifest.js",revision:"e7f84ae86336ce6d2259ab7f2ffcda1a"},{url:"/_next/static/m8Utw_jQzi9cffN27Ccdn/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/_next/static/media/569ce4b8f30dc480-s.p.woff2",revision:"ef6cefb32024deac234e82f932a95cbd"},{url:"/_next/static/media/747892c23ea88013-s.woff2",revision:"a0761690ccf4441ace5cec893b82d4ab"},{url:"/_next/static/media/93f479601ee12b01-s.p.woff2",revision:"da83d5f06d825c5ae65b7cca706cb312"},{url:"/_next/static/media/ba015fad6dcf6784-s.woff2",revision:"8ea4f719af3312a055caf09f34c89a77"},{url:"/file.svg",revision:"d09f95206c3fa0bb9bd9fefabfd0ea71"},{url:"/globe.svg",revision:"2aaafa6a49b6563925fe440891e32717"},{url:"/manifest.json",revision:"5550a8cc74cbddc0511565d0e48e3fdf"},{url:"/next.svg",revision:"8e061864f388b47f33a1c3780831193e"},{url:"/vercel.svg",revision:"c0af2f507b369b085b35ef4bbe3bcf1e"},{url:"/window.svg",revision:"a2760511c65806022ad20adf74370ff3"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:s,event:c,state:n})=>s&&"opaqueredirect"===s.type?new Response(s.body,{status:200,statusText:"OK",headers:s.headers}):s}]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,new e.CacheFirst({cacheName:"google-fonts-webfonts",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,new e.StaleWhileRevalidate({cacheName:"google-fonts-stylesheets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,new e.StaleWhileRevalidate({cacheName:"static-font-assets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,new e.StaleWhileRevalidate({cacheName:"static-image-assets",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/image\?url=.+$/i,new e.StaleWhileRevalidate({cacheName:"next-image",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp3|wav|ogg)$/i,new e.CacheFirst({cacheName:"static-audio-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp4)$/i,new e.CacheFirst({cacheName:"static-video-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:js)$/i,new e.StaleWhileRevalidate({cacheName:"static-js-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:css|less)$/i,new e.StaleWhileRevalidate({cacheName:"static-style-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/data\/.+\/.+\.json$/i,new e.StaleWhileRevalidate({cacheName:"next-data",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:json|xml|csv)$/i,new e.NetworkFirst({cacheName:"static-data-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;const s=e.pathname;return!s.startsWith("/api/auth/")&&!!s.startsWith("/api/")}),new e.NetworkFirst({cacheName:"apis",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:16,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;return!e.pathname.startsWith("/api/")}),new e.NetworkFirst({cacheName:"others",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>!(self.origin===e.origin)),new e.NetworkFirst({cacheName:"cross-origin",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:3600})]}),"GET")}));
+</file>
+
+<file path="src/app/wishlist/page.tsx">
+"use client";
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
+import { FaTrash } from 'react-icons/fa'; // Import the trash icon
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+
+// Define interface for wishlist book data
+interface WishlistBook {
+  id: number;
+  title: string;
+  author: string;
+  note: string;
+}
+
+export default function WishlistPage() {
+  const { t } = useTranslation();
+  const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newBook, setNewBook] = useState<Omit<WishlistBook, 'id'>>({
+    title: "",
+    author: "",
+    note: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWishlist = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/wishlist');
+      if (!response.ok) {
+        throw new Error(`Error fetching wishlist: ${response.statusText}`);
+      }
+      const data: WishlistBook[] = await response.json();
+      setWishlistBooks(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Error fetching wishlist:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []); // Fetch wishlist on component mount
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewBook({ ...newBook, [name]: value });
+  };
+
+  const handleAddBook = async () => {
+    // Basic validation
+    if (!newBook.title || !newBook.author) {
+      alert(t('titleAuthorRequired'));
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBook),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error adding wishlist item: ${response.statusText}`);
+      }
+
+      // Refetch the wishlist after adding a new item
+      fetchWishlist();
+
+      setShowForm(false);
+      // Reset form
+      setNewBook({
+        title: "",
+        author: "",
+        note: "",
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('unknownError'));
+      console.error(t('errorAddingWishlistItem'), err);
+      alert(`${t('failedToAddBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting wishlist item: ${response.statusText}`);
+      }
+
+      // Update state by removing the deleted item
+      setWishlistBooks(wishlistBooks.filter(item => item.id !== id));
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('unknownError'));
+      console.error(t('errorDeletingWishlistItem'), err);
+      alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+    }
+  };
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Breadcrumb /> {/* Add Breadcrumb component */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold">{t('allWishlistBooks')}</h1>
+        <Button onClick={() => setShowForm(!showForm)}>
+          {showForm ? t('cancel') : t('addNewBook')}
+        </Button>
+      </div>
+
+      {showForm && (
+        <Card className="mb-8 p-4">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-4">{t('addNewWishlistBook')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="title" className="mb-1">{t('title')}</Label>
+                <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="author" className="mb-1">{t('author')}</Label>
+                <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <Label htmlFor="note" className="mb-1">{t('note')}</Label>
+                <Textarea id="note" name="note" value={newBook.note} onChange={handleInputChange} />
+              </div>
+            </div>
+            <Button onClick={handleAddBook} className="mt-4">{t('addBook')}</Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {[...Array(5)].map((_, index) => (
+            <Card key={index} className="border-none shadow-md p-4">
+              <CardContent className="p-0">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-500">{t('error')}: {error}</p>}
+
+          {!loading && !error && (
+            <div className="flex flex-col gap-4">
+              {wishlistBooks.map((book) => (
+                <Card key={book.id} className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer relative"> {/* Added relative positioning */}
+                  <Link href={`/wishlist/${book.id}`} passHref> {/* Link wraps content */}
+                    <CardContent className="p-4 pr-10"> {/* Added right padding to make space for button */}
+                      <h3 className="text-lg font-semibold">{book.title}</h3>
+                      <p className="text-sm text-gray-600">{book.author}</p>
+                      {book.note && <p className="text-sm text-gray-500 mt-2">{t('note')}: {book.note}</p>}
+                    </CardContent>
+                  </Link>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(book.id)} className="absolute top-2 right-2 cursor-pointer"> {/* Changed variant, added cursor-pointer */}
+                    <FaTrash className="text-red-500" /> {/* Using the trash icon and added color */}
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+
+      <div className="mt-8">
+        <Link href="/">
+          <Button variant="outline">{t('backToHome')}</Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { TranslationProvider } from "@/translations/TranslationContext";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Dooks",
+  description: "Dooks is a ducky book tracker app that helps you keep track of your books and wishlist.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#ffffff" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TranslationProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </TranslationProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="next.config.ts">
+import withPWA from "next-pwa";
+
+const pwaConfig = withPWA({
+  dest: "public",
+  register: true,
+  disable: process.env.NODE_ENV === 'development', // Disable PWA in development
+});
+
+const nextConfig = {
+  /* config options here */
+};
+
+export default pwaConfig(nextConfig);
+</file>
+
+<file path="src/app/recently-read/[bookId]/page.tsx">
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+import { Rating } from '@smastrom/react-rating' // Import the Rating component
+import '@smastrom/react-rating/style.css'
+
+// Define custom item shapes using Font Awesome icons
+const CustomStar = (
+<path xmlns="http://www.w3.org/2000/svg" d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+);
+
+const CustomHeart = (
+  <path xmlns="http://www.w3.org/2000/svg" d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
+);
+
+// Placeholder for sadness icon - no direct droplet/tear found in react-icons/fa
+const CustomSadnessPlaceholder = (
+  <path xmlns="http://www.w3.org/2000/svg" d="M491-200q12-1 20.5-9.5T520-230q0-14-9-22.5t-23-7.5q-41 3-87-22.5T343-375q-2-11-10.5-18t-19.5-7q-14 0-23 10.5t-6 24.5q17 91 80 130t127 35ZM480-80q-137 0-228.5-94T160-408q0-100 79.5-217.5T480-880q161 137 240.5 254.5T800-408q0 140-91.5 234T480-80Z"/>
+);
+
+
+const CustomFire = (
+  <path xmlns="http://www.w3.org/2000/svg" d="M160-400q0-105 50-187t110-138q60-56 110-85.5l50-29.5v132q0 37 25 58.5t56 21.5q17 0 32.5-7t28.5-23l18-22q72 42 116 116.5T800-400q0 88-43 160.5T644-125q17-24 26.5-52.5T680-238q0-40-15-75.5T622-377L480-516 339-377q-29 29-44 64t-15 75q0 32 9.5 60.5T316-125q-70-42-113-114.5T160-400Zm320-4 85 83q17 17 26 38t9 45q0 49-35 83.5T480-120q-50 0-85-34.5T360-238q0-23 9-44.5t26-38.5l85-83Z"/>
+);
+
+const CustomFinal = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+  />
+);
+
+const overallRatingStyles = {
+  itemShapes: CustomStar,
+  activeFillColor: '#ffb700',
+  inactiveFillColor: '#fbf1a9',
+};
+
+const romanceRatingStyles = {
+  itemShapes: CustomHeart,
+  activeFillColor: '#e31b23', // Red color for heart
+  inactiveFillColor: '#ffb3b3', // Lighter red
+};
+
+const sadnessRatingStyles = {
+  itemShapes: CustomSadnessPlaceholder,
+  activeFillColor: '#007bff', // Blue color for placeholder
+  inactiveFillColor: '#b3d9ff', // Lighter blue
+};
+
+const spicyRatingStyles = {
+  itemShapes: CustomFire,
+  activeFillColor: '#ff6b00',
+  inactiveFillColor: '#f8d7da',
+};
+
+const finalRatingStyles = {
+  itemShapes: CustomFinal,
+  activeFillColor: '#28a745',
+  inactiveFillColor: '#d4edda',
+};
+
+
+// Define interface for entry data (matching the 'entries' table structure)
+interface Entry {
+  id: number;
+  title: string;
+  author: string;
+  recommended: boolean | null;
+  rating: number | null;
+  formato: string | null;
+  page_number: number | null; // Note: snake_case from DB
+  start_date: string | null; // Note: snake_case from DB
+  end_date: string | null;   // Note: snake_case from DB
+  fav_character: string | null; // Note: snake_case from DB
+  hated_character: string | null; // Note: snake_case from DB
+  rating_details: { // JSONB column
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  } | null;
+  genre: string | null;
+  fav_phrases: string[] | null; // JSONB column
+  review: string | null;
+}
+
+
+export default function RecentlyReadBookPage() {
+  const { t } = useTranslation();
+  const params = useParams();
+  const router = useRouter();
+  const bookId = parseInt(params.bookId as string, 10);
+
+  const [entry, setEntry] = useState<Entry | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEntry = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch the specific entry by ID
+        const response = await fetch(`/api/entries?id=${bookId}`);
+        if (!response.ok) {
+          throw new Error(`Error fetching entry: ${response.statusText}`);
+        }
+        const data: Entry[] = await response.json();
+        if (data.length > 0) {
+          setEntry(data[0]); // Assuming the API returns an array with one item
+        } else {
+          setEntry(null); // Book not found
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorFetchingEntry'), err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (bookId) {
+      fetchEntry();
+    }
+  }, [bookId, t]); // Refetch when bookId changes
+
+  const handleDeleteBook = async () => {
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: bookId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting book: ${response.statusText}`);
+      }
+
+      // Navigate back to the recently read list after successful deletion
+      router.push('/recently-read');
+
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('unknownError'));
+        console.error(t('errorDeletingBook'), err);
+        alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      }
+    };
+
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <Skeleton className="h-8 w-1/2 mb-8" /> {/* Title skeleton */}
+        <Card className="border-none shadow-md py-6">
+          <CardHeader>
+            <Skeleton className="h-7 w-3/4 mb-2" /> {/* Book Title skeleton */}
+            <Skeleton className="h-4 w-1/2" /> {/* Author skeleton */}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-4 w-1/4" /> {/* Recommended skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Overall Rating skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Format skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Page Number skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Start Date skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* End Date skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Favorite Character skeleton */}
+            <Skeleton className="h-4 w-1/3" /> {/* Hated Character skeleton */}
+            <Skeleton className="h-4 w-1/4" /> {/* Genre skeleton */}
+            <Skeleton className="h-20 w-full" /> {/* Review skeleton */}
+          </CardContent>
+        </Card>
+        <div className="mt-8 flex justify-between">
+          <Skeleton className="h-10 w-32" /> {/* Back button skeleton */}
+          <Skeleton className="h-10 w-24" /> {/* Delete button skeleton */}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="container mx-auto py-8 px-4 text-red-500">{t('error')}: {error}</div>;
+  }
+
+  if (!entry) {
+    return <div className="container mx-auto py-8 px-4">{t('bookNotFound')}</div>;
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Breadcrumb itemName={entry?.title} /> {/* Add Breadcrumb component and pass item name */}
+      <h1 className="text-2xl font-semibold mb-8">{t('bookDetails')}</h1>
+
+      <Card className="border-none shadow-md py-6">
+        <CardHeader>
+          <CardTitle>{entry.title}</CardTitle>
+          <p className="text-sm text-gray-600">{entry.author}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p><strong>{t('recommended')}:</strong> {entry.recommended ? t('yes') : t('no')}</p>
+          {entry.rating !== null && (
+            <div className="flex items-center">
+              <strong className="mr-2">{t('overallRating')}:</strong>
+              <Rating
+                value={entry.rating || 0}
+                readOnly={true}
+                items={5}
+                halfFillMode="svg"
+                itemStyles={overallRatingStyles}
+                style={{ maxWidth: "150px" }} // Set max width
+              />
+            </div>
+          )}
+          {entry.formato && <p><strong>{t('format')}:</strong> {t(`format${entry.formato.charAt(0).toUpperCase()}${entry.formato.slice(1)}`)}</p>}
+          {entry.page_number !== null && <p><strong>{t('pageNumber')}:</strong> {entry.page_number}</p>}
+          {entry.start_date && <p><strong>{t('startDate')}:</strong> {new Date(entry.start_date).toLocaleDateString()}</p>}
+          {entry.end_date && <p><strong>{t('endDate')}:</strong> {new Date(entry.end_date).toLocaleDateString()}</p>}
+          {entry.fav_character && <p><strong>{t('favoriteCharacter')}:</strong> {entry.fav_character}</p>}
+          {entry.hated_character && <p><strong>{t('hatedCharacter')}:</strong> {entry.hated_character}</p>}
+          {entry.rating_details && (
+            <div>
+              <strong>{t('detailedRatings')}:</strong>
+              <div className="space-y-2 mt-2">
+                <div className="flex items-center">
+                  <strong className="w-24">{t('romance')}:</strong>
+                  <Rating
+                    value={entry.rating_details?.romance || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={romanceRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
+                  />
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">{t('sadness')}:</strong>
+                  <Rating
+                    value={entry.rating_details?.sadness || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={sadnessRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
+                  />
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">{t('spicy')}:</strong>
+                  <Rating
+                    value={entry.rating_details?.spicy || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={spicyRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
+                  />
+                </div>
+                <div className="flex items-center">
+                  <strong className="w-24">{t('final')}:</strong>
+                  <Rating
+                    value={entry.rating_details?.final || 0}
+                    readOnly={true}
+                    items={5}
+                    halfFillMode="svg"
+                    itemStyles={finalRatingStyles}
+                    style={{ maxWidth: "150px" }} // Set max width
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          {entry.genre && <p><strong>{t('genre')}:</strong> {entry.genre}</p>}
+          {entry.fav_phrases && entry.fav_phrases.length > 0 && (
+            <div>
+              <strong>{t('favoritePhrases')}:</strong>
+              <ul className="list-disc list-inside">
+                {entry.fav_phrases.map((phrase, index) => <li key={index}>{phrase}</li>)}
+              </ul>
+            </div>
+          )}
+          {entry.review && <p><strong>{t('review')}:</strong> {entry.review}</p>}
+        </CardContent>
+      </Card>
+
+      <div className="mt-8 flex justify-between">
+        <Link href="/recently-read">
+          <Button variant="outline">{t('backToRecentlyRead')}</Button>
+        </Link>
+        <Button variant="destructive" onClick={handleDeleteBook}>
+          {t('delete')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "collection",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.4",
+    "@radix-ui/react-select": "^2.2.2",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@smastrom/react-rating": "^1.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.501.0",
+    "next": "15.3.1",
+    "next-pwa": "^5.6.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
+    "tailwind-merge": "^3.2.0",
+    "tailwindcss-animate": "^1.0.7",
+    "tw-animate-css": "^1.2.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/next-pwa": "^5.6.9",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="src/app/recently-read/page.tsx">
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/translations/TranslationContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { FaTrash } from "react-icons/fa"; // Import necessary icons
+import Breadcrumb from "@/components/breadcrumb"; // Import Breadcrumb component
+import { Rating } from "@smastrom/react-rating"; // Import the Rating component
+import "@smastrom/react-rating/style.css";
+
+// Define interface for entry data (matching the 'entries' table structure)
+interface Entry {
+  id: number;
+  title: string;
+  author: string;
+  recommended: boolean | null;
+  rating: number | null;
+  formato: string | null;
+  page_number: number | null; // Note: snake_case from DB
+  start_date: string | null; // Note: snake_case from DB
+  end_date: string | null; // Note: snake_case from DB
+  fav_character: string | null; // Note: snake_case from DB
+  hated_character: string | null; // Note: snake_case from DB
+  rating_details: {
+    // JSONB column
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  } | null;
+  genre: string | null;
+  fav_phrases: string[] | null; // JSONB column
+  review: string | null;
+}
+
+// Define interface for the new book state (camelCase for frontend form)
+interface NewBookState {
+  title: string;
+  author: string;
+  recommended: boolean;
+  rating: number;
+  formato: string;
+  pageNumber: number;
+  startDate: string;
+  endDate: string;
+  favCharacter: string;
+  hatedCharacter: string;
+  ratingDetails: {
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  };
+  genre: string;
+  favPhrases: string; // Change to string to hold raw input
+  review: string;
+}
+
+// Define custom item shapes using Font Awesome icons
+const CustomStar = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"
+  />
+);
+
+const CustomHeart = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"
+  />
+);
+
+// Placeholder for sadness icon - no direct droplet/tear found in react-icons/fa
+const CustomSadnessPlaceholder = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="M491-200q12-1 20.5-9.5T520-230q0-14-9-22.5t-23-7.5q-41 3-87-22.5T343-375q-2-11-10.5-18t-19.5-7q-14 0-23 10.5t-6 24.5q17 91 80 130t127 35ZM480-80q-137 0-228.5-94T160-408q0-100 79.5-217.5T480-880q161 137 240.5 254.5T800-408q0 140-91.5 234T480-80Z"
+  />
+);
+
+const CustomFire = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="M160-400q0-105 50-187t110-138q60-56 110-85.5l50-29.5v132q0 37 25 58.5t56 21.5q17 0 32.5-7t28.5-23l18-22q72 42 116 116.5T800-400q0 88-43 160.5T644-125q17-24 26.5-52.5T680-238q0-40-15-75.5T622-377L480-516 339-377q-29 29-44 64t-15 75q0 32 9.5 60.5T316-125q-70-42-113-114.5T160-400Zm320-4 85 83q17 17 26 38t9 45q0 49-35 83.5T480-120q-50 0-85-34.5T360-238q0-23 9-44.5t26-38.5l85-83Z"
+  />
+);
+
+const CustomFinal = (
+  <path
+    xmlns="http://www.w3.org/2000/svg"
+    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+  />
+);
+
+const overallRatingStyles = {
+  itemShapes: CustomStar,
+  activeFillColor: "#ffb700",
+  inactiveFillColor: "#fbf1a9",
+};
+
+const romanceRatingStyles = {
+  itemShapes: CustomHeart,
+  activeFillColor: "#e31b23", // Red color for heart
+  inactiveFillColor: "#ffb3b3", // Lighter red
+};
+
+const sadnessRatingStyles = {
+  itemShapes: CustomSadnessPlaceholder,
+  activeFillColor: "#007bff", // Blue color for placeholder
+  inactiveFillColor: "#b3d9ff", // Lighter blue
+};
+
+const spicyRatingStyles = {
+  itemShapes: CustomFire,
+  activeFillColor: "#ff6b00",
+  inactiveFillColor: "#f8d7da",
+};
+
+const finalRatingStyles = {
+  itemShapes: CustomFinal,
+  activeFillColor: '#28a745',
+  inactiveFillColor: '#d4edda',
+};
+
+export default function RecentlyReadPage() {
+  const { t } = useTranslation();
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newBook, setNewBook] = useState<NewBookState>({
+    title: "",
+    author: "",
+    recommended: false,
+    rating: 0,
+    formato: "",
+    pageNumber: 0,
+    startDate: "",
+    endDate: "",
+    favCharacter: "",
+    hatedCharacter: "",
+    ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
+    genre: "",
+    favPhrases: "", // Initialize as empty string
+    review: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEntries = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/entries");
+      if (!response.ok) {
+        throw new Error(`Error fetching entries: ${response.statusText}`);
+      }
+      const data: Entry[] = await response.json();
+      setEntries(data);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+      console.error("Error fetching entries:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntries();
+  }, []); // Fetch entries on component mount
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewBook({ ...newBook, [name as keyof NewBookState]: value });
+  };
+
+  const handleRatingChange = (
+    type: keyof NewBookState["ratingDetails"],
+    value: number
+  ) => {
+    setNewBook({
+      ...newBook,
+      ratingDetails: {
+        ...newBook.ratingDetails,
+        [type]: value,
+      },
+    });
+  };
+
+  const handleSelectChange = (name: keyof NewBookState, value: string) => {
+    setNewBook({ ...newBook, [name]: value });
+  };
+
+  const handleAddBook = async () => {
+    // Basic validation
+    if (!newBook.title || !newBook.author) {
+      alert(t("titleAuthorRequired"));
+      return;
+    }
+
+    // Process favPhrases string into an array, handling empty input
+    const processedFavPhrases = newBook.favPhrases
+      .split(",")
+      .map((phrase) => phrase.trim())
+      .filter((phrase) => phrase.length > 0); // Remove empty strings
+
+    try {
+      const response = await fetch("/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...newBook,
+          favPhrases: processedFavPhrases, // Send the processed array
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error adding entry: ${response.statusText}`);
+      }
+
+      // Refetch the entries after adding a new item
+      fetchEntries();
+
+      setShowForm(false);
+      // Reset form
+      setNewBook({
+        title: "",
+        author: "",
+        recommended: false,
+        rating: 0,
+        formato: "",
+        pageNumber: 0,
+        startDate: "",
+        endDate: "",
+        favCharacter: "",
+        hatedCharacter: "",
+        ratingDetails: { romance: 0, sadness: 0, spicy: 0, final: 0 },
+        genre: "",
+        favPhrases: "", // Reset to empty string
+        review: "",
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("unknownError"));
+      console.error(t("errorAddingEntry"), err);
+      alert(
+        `${t("failedToAddBook")}: ${
+          err instanceof Error ? err.message : t("unknownError")
+        }`
+      );
+    }
+  };
+
+  const handleDeleteEntry = async (id: number) => {
+    try {
+      const response = await fetch("/api/entries", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error deleting entry: ${response.statusText}`);
+      }
+
+      // Update state by removing the deleted entry
+      setEntries(entries.filter((entry) => entry.id !== id));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("unknownError"));
+      console.error(t("errorDeletingEntry"), err);
+      alert(
+        `${t("failedToDeleteBook")}: ${
+          err instanceof Error ? err.message : t("unknownError")
+        }`
+      );
+    }
+  };
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Breadcrumb /> {/* Add Breadcrumb component */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold">{t("allRecentlyReadBooks")}</h1>
+        <Button onClick={() => setShowForm(!showForm)}>
+          {showForm ? t("cancel") : t("addNewBook")}
+        </Button>
+      </div>
+      {showForm && (
+        <Card className="mb-8 p-4">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-4">
+              {t("addNewRecentlyReadBook")}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="title" className="mb-1">
+                  {t("title")}
+                </Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={newBook.title}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="author" className="mb-1">
+                  {t("author")}
+                </Label>
+                <Input
+                  id="author"
+                  name="author"
+                  value={newBook.author}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="recommended" className="mb-1">
+                  {t("recommended")}
+                </Label>
+                <input
+                  type="checkbox"
+                  id="recommended"
+                  name="recommended"
+                  checked={newBook.recommended}
+                  onChange={(e) =>
+                    setNewBook({ ...newBook, recommended: e.target.checked })
+                  }
+                  className="ml-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="rating" className="mb-1">
+                  {t("overallRating")}
+                </Label>
+                <Rating
+                  value={newBook.rating}
+                  onChange={(value: number) =>
+                    setNewBook({ ...newBook, rating: value })
+                  }
+                  items={5} // 5 stars
+                  halfFillMode="svg"
+                  itemStyles={overallRatingStyles}
+                  style={{ maxWidth: "150px" }} // Set the width to 1rem
+                />
+              </div>
+              <div>
+                <Label htmlFor="formato" className="mb-1">
+                  {t("format")}
+                </Label>
+                <Select
+                  onValueChange={(value) =>
+                    handleSelectChange("formato", value)
+                  }
+                  value={newBook.formato}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectFormat")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="digital">{t("digital")}</SelectItem>
+                    <SelectItem value="physical">{t("physical")}</SelectItem>
+                    <SelectItem value="both">{t("both")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="pageNumber" className="mb-1">
+                  {t("pageNumber")}
+                </Label>
+                <Input
+                  type="number"
+                  id="pageNumber"
+                  name="pageNumber"
+                  value={newBook.pageNumber}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="startDate" className="mb-1">
+                  {t("startDate")}
+                </Label>
+                <Input
+                  type="date"
+                  id="startDate"
+                  name="startDate"
+                  value={newBook.startDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="endDate" className="mb-1">
+                  {t("endDate")}
+                </Label>
+                <Input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={newBook.endDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="favCharacter" className="mb-1">
+                  {t("favoriteCharacter")}
+                </Label>
+                <Input
+                  id="favCharacter"
+                  name="favCharacter"
+                  value={newBook.favCharacter}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="hatedCharacter" className="mb-1">
+                  {t("hatedCharacter")}
+                </Label>
+                <Input
+                  id="hatedCharacter"
+                  name="hatedCharacter"
+                  value={newBook.hatedCharacter}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="genre" className="mb-1">
+                  {t("genre")}
+                </Label>
+                <Input
+                  id="genre"
+                  name="genre"
+                  value={newBook.genre}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <h3 className="text-lg font-semibold mb-2">
+                  {t("detailedRatings")}
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="rating-romance" className="mb-1">
+                      {t("romance")}
+                    </Label>
+                    <Rating
+                      value={newBook.ratingDetails.romance}
+                      onChange={(value: number) =>
+                        handleRatingChange("romance", value)
+                      }
+                      items={5}
+                      halfFillMode="svg"
+                      itemStyles={romanceRatingStyles}
+                      style={{ maxWidth: "150px" }} // Set max width
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rating-sadness" className="mb-1">
+                      {t("sadness")}
+                    </Label>
+                    <Rating
+                      value={newBook.ratingDetails.sadness}
+                      onChange={(value: number) =>
+                        handleRatingChange("sadness", value)
+                      }
+                      items={5}
+                      halfFillMode="svg"
+                      itemStyles={sadnessRatingStyles}
+                      style={{ maxWidth: "150px" }} // Set max width
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rating-spicy" className="mb-1">
+                      {t("spicy")}
+                    </Label>
+                    <Rating
+                      value={newBook.ratingDetails.spicy}
+                      onChange={(value: number) =>
+                        handleRatingChange("spicy", value)
+                      }
+                      items={5}
+                      halfFillMode="svg"
+                      itemStyles={spicyRatingStyles}
+                      style={{ maxWidth: "150px" }} // Set max width
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rating-final" className="mb-1">
+                      {t("final")}
+                    </Label>
+                    <Rating
+                      value={newBook.ratingDetails.final}
+                      onChange={(value: number) =>
+                        handleRatingChange("final", value)
+                      }
+                      items={5}
+                      halfFillMode="svg"
+                      itemStyles={finalRatingStyles}
+                      style={{ maxWidth: "150px" }} // Set max width
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <Label htmlFor="favPhrases" className="mb-1">
+                  {t("favoritePhrases")}
+                </Label>
+                <Input
+                  id="favPhrases"
+                  name="favPhrases"
+                  value={newBook.favPhrases} // Use the raw string value
+                  onChange={handleInputChange} // Use the generic input handler
+                  placeholder={t("separatePhrasesWithCommas")} // Add placeholder text
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <Label htmlFor="review" className="mb-1">
+                  {t("review")}
+                </Label>
+                <Textarea
+                  id="review"
+                  name="review"
+                  value={newBook.review}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            <Button onClick={handleAddBook} className="mt-4">
+              {t("addBook")}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {[...Array(5)].map((_, index) => (
+            <Card key={index} className="border-none shadow-md p-4">
+              <CardContent className="p-0">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      {error && (
+        <p className="text-red-500">
+          {t("error")}: {error}
+        </p>
+      )}
+      {!loading && !error && (
+        <div className="flex flex-col gap-4">
+          {entries.map((entry) => (
+            <Card
+              key={entry.id}
+              className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer relative"
+            >
+              {" "}
+              {/* Added relative positioning */}
+              <Link href={`/recently-read/${entry.id}`} passHref>
+                {" "}
+                {/* Link wraps content */}
+                <CardContent className="p-4 pr-10">
+                  {" "}
+                  {/* Added right padding to make space for button */}
+                  <h3 className="text-lg font-semibold">{entry.title}</h3>
+                  <p className="text-sm text-gray-600">{entry.author}</p>
+                  {entry.review && (
+                    <p className="text-sm text-gray-500 my-2">{entry.review}</p>
+                  )}
+                  {/* Display overall rating if available */}
+                  {entry.rating !== null && (
+                    <Rating
+                      value={entry.rating || 0}
+                      readOnly={true}
+                      items={5}
+                      halfFillMode="svg"
+                      itemStyles={overallRatingStyles}
+                      style={{ maxWidth: "150px" }} // Set max width
+                    />
+                  )}
+                </CardContent>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDeleteEntry(entry.id)}
+                className="absolute top-2 right-2 cursor-pointer"
+              >
+                {" "}
+                {/* Positioned in top right */}
+                <FaTrash className="text-red-500" />{" "}
+                {/* Added trash icon and color */}
+              </Button>
+            </Card>
+          ))}
+        </div>
+      )}
+      <div className="mt-8">
+        <Link href="/">
+          <Button variant="outline">{t("backToHome")}</Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from "next/link";
+import { useTranslation } from "@/translations/TranslationContext";
+import { Card, CardContent } from "@/components/ui/card";
+import LanguageSwitcher from "@/components/language-switcher";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Rating } from '@smastrom/react-rating' // Import the Rating component
+import '@smastrom/react-rating/style.css'
+
+// Define custom item shapes using Font Awesome icons
+const CustomStar = (
+<path xmlns="http://www.w3.org/2000/svg" d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+);
+
+const overallRatingStyles = {
+  itemShapes: CustomStar,
+  activeFillColor: '#ffb700',
+  inactiveFillColor: '#fbf1a9',
+};
+
+
+interface Entry {
+  id: number;
+  title: string;
+  author: string;
+  recommended: boolean | null;
+  rating: number | null;
+  formato: string | null;
+  page_number: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  fav_character: string | null;
+  hated_character: string | null;
+  rating_details: {
+    romance: number;
+    sadness: number;
+    spicy: number;
+    final: number;
+  } | null;
+  genre: string | null;
+  fav_phrases: string[] | null;
+  review: string | null;
+}
+
+interface WishlistItem {
+  id: number;
+  title: string;
+  author: string;
+  note: string;
+}
+
+export default function Home() {
+  const { t } = useTranslation();
+  const [recentlyReadBooks, setRecentlyReadBooks] = useState<Entry[]>([]);
+  const [wishlistBooks, setWishlistBooks] = useState<WishlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [entriesResponse, wishlistResponse] = await Promise.all([
+          fetch('/api/entries'),
+          fetch('/api/wishlist')
+        ]);
+
+        if (!entriesResponse.ok) {
+          throw new Error(`Error fetching recently read books: ${entriesResponse.text}`);
+        }
+        if (!wishlistResponse.ok) {
+          throw new Error(`Error fetching wishlist items: ${wishlistResponse.text}`);
+        }
+
+        const [entriesData, wishlistData] = await Promise.all([
+          entriesResponse.json(),
+          wishlistResponse.json()
+        ]);
+
+        setRecentlyReadBooks(entriesData);
+        setWishlistBooks(wishlistData);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold">{t('greeting')}</h1>
+        <LanguageSwitcher />
+      </div>
+
+      {error && <p className="text-red-500">{t('error')}: {error}</p>}
+
+      {loading && (
+        <div className="flex flex-col gap-8">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Card key={index} className="border-none shadow-md">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-5 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-2" />
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-full mt-2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Card key={index} className="border-none shadow-md">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-5 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-2" />
+                    <Skeleton className="h-4 w-full mt-2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="flex flex-col gap-8">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">{t('recentlyRead')}</h2>
+              <Link href="/recently-read">
+                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">{t('viewAll')}</Button>
+              </Link>
+            </div>
+            <div className="flex flex-col gap-4">
+              {recentlyReadBooks.slice(0, 3).map((book) => (
+                <Link key={book.id} href={`/recently-read/${book.id}`}>
+                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer">
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-semibold">{book.title}</h3>
+                      <p className="text-sm text-gray-600">{book.author}</p>
+                      {book.review && <p className="text-sm text-gray-500 my-2">{book.review}</p>}
+                      {book.rating !== null && (
+                        <Rating
+                          value={book.rating || 0}
+                          readOnly={true}
+                          items={5}
+                          halfFillMode="svg"
+                          itemStyles={overallRatingStyles}
+                          style={{ maxWidth: "150px" }} // Set max width
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">{t('wishlist')}</h2>
+              <Link href="/wishlist">
+                <Button variant="link" className="text-gray-500 cursor-pointer hover:no-underline hover:text-gray-700">{t('viewAll')}</Button>
+              </Link>
+            </div>
+            <div className="flex flex-col gap-4">
+              {wishlistBooks.slice(0, 3).map((book) => (
+                <Link key={book.id} href={`/wishlist/${book.id}`}>
+                  <Card className="border-none shadow-md hover:bg-gray-100 active:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-800 cursor-pointer">
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-semibold">{book.title}</h3>
+                      <p className="text-sm text-gray-600">{book.author}</p>
+                      {book.note && <p className="text-sm text-gray-500 mt-2">{book.note}</p>}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+</file>
+
+</files>

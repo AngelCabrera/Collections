@@ -5,11 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -37,6 +40,14 @@ export default function LanguageSwitcher() {
       >
         {theme === "light" ? "☀️" : "🌙"}
       </Button>
+      {user ? (
+        <Button variant="outline" onClick={logout} className="ml-2">Logout</Button>
+      ) : (
+        <>
+          <Link href="/login" className="ml-2"><Button variant="outline">Login</Button></Link>
+          <Link href="/signup" className="ml-2"><Button variant="outline">Sign Up</Button></Link>
+        </>
+      )}
     </div>
   );
 }

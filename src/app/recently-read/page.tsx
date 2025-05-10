@@ -20,6 +20,7 @@ import { FaTrash } from "react-icons/fa"; // Import necessary icons
 import Breadcrumb from "@/components/breadcrumb"; // Import Breadcrumb component
 import { Rating } from "@smastrom/react-rating"; // Import the Rating component
 import "@smastrom/react-rating/style.css";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Define interface for entry data (matching the 'entries' table structure)
 interface Entry {
@@ -138,6 +139,7 @@ const finalRatingStyles = {
 
 export default function RecentlyReadPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<NewBookState>({
@@ -163,7 +165,12 @@ export default function RecentlyReadPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/entries");
+      if (!user) {
+        setEntries([]);
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`/api/entries?user_id=${user.id}`);
       if (!response.ok) {
         throw new Error(`Error fetching entries: ${response.statusText}`);
       }
@@ -214,6 +221,11 @@ export default function RecentlyReadPage() {
       return;
     }
 
+    if (!user) {
+      setError("You must be logged in to add an entry.");
+      return;
+    }
+
     // Process favPhrases string into an array, handling empty input
     const processedFavPhrases = newBook.favPhrases
       .split(",")
@@ -229,6 +241,7 @@ export default function RecentlyReadPage() {
         body: JSON.stringify({
           ...newBook,
           favPhrases: processedFavPhrases, // Send the processed array
+          user_id: user.id, // Include user_id
         }),
       });
 

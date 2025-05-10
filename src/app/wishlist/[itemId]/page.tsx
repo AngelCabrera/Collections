@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define interface for wishlist item data (matching the 'items' table structure)
 interface WishlistItem {
@@ -19,6 +20,7 @@ interface WishlistItem {
 
 export default function WishlistItemPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const itemId = parseInt(params.itemId as string, 10);
@@ -32,8 +34,13 @@ export default function WishlistItemPage() {
       setLoading(true);
       setError(null);
       try {
-        // Fetch the specific wishlist item by ID
-        const response = await fetch(`/api/wishlist?id=${itemId}`);
+        if (!user) {
+          setItem(null);
+          setLoading(false);
+          return;
+        }
+        // Fetch the specific wishlist item by ID and user_id
+        const response = await fetch(`/api/wishlist?id=${itemId}&user_id=${user.id}`);
         if (!response.ok) {
           throw new Error(`Error fetching wishlist item: ${response.statusText}`);
         }
@@ -54,16 +61,20 @@ export default function WishlistItemPage() {
     if (itemId) {
       fetchItem();
     }
-  }, [itemId, t]); // Refetch when itemId changes
+  }, [itemId, t, user]); // Refetch when itemId or user changes
 
   const handleDeleteItem = async () => {
+    if (!user) {
+      setError('You must be logged in to delete an item.');
+      return;
+    }
     try {
       const response = await fetch('/api/wishlist', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: itemId }),
+        body: JSON.stringify({ id: itemId, user_id: user.id }),
       });
 
       if (!response.ok) {

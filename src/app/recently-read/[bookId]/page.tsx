@@ -10,6 +10,7 @@ import Link from "next/link";
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 import { Rating } from '@smastrom/react-rating' // Import the Rating component
 import '@smastrom/react-rating/style.css'
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define custom item shapes using Font Awesome icons
 const CustomStar = (
@@ -95,6 +96,7 @@ interface Entry {
 
 export default function RecentlyReadBookPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const bookId = parseInt(params.bookId as string, 10);
@@ -108,8 +110,13 @@ export default function RecentlyReadBookPage() {
       setLoading(true);
       setError(null);
       try {
-        // Fetch the specific entry by ID
-        const response = await fetch(`/api/entries?id=${bookId}`);
+        if (!user) {
+          setEntry(null);
+          setLoading(false);
+          return;
+        }
+        // Fetch the specific entry by ID and user_id
+        const response = await fetch(`/api/entries?id=${bookId}&user_id=${user.id}`);
         if (!response.ok) {
           throw new Error(`Error fetching entry: ${response.statusText}`);
         }
@@ -130,16 +137,20 @@ export default function RecentlyReadBookPage() {
     if (bookId) {
       fetchEntry();
     }
-  }, [bookId, t]); // Refetch when bookId changes
+  }, [bookId, t, user]); // Refetch when bookId or user changes
 
   const handleDeleteBook = async () => {
+    if (!user) {
+      setError('You must be logged in to delete an entry.');
+      return;
+    }
     try {
       const response = await fetch('/api/entries', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: bookId }),
+        body: JSON.stringify({ id: bookId, user_id: user.id }),
       });
 
       if (!response.ok) {

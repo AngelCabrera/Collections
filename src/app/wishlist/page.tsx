@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { FaTrash } from 'react-icons/fa'; // Import the trash icon
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
+import { useAuth } from '@/contexts/AuthContext'; // Import useAuth to get the current user
 
 // Define interface for wishlist book data
 interface WishlistBook {
@@ -22,6 +23,7 @@ interface WishlistBook {
 
 export default function WishlistPage() {
   const { t } = useTranslation();
+  const { user } = useAuth(); // Get the current user
   const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<Omit<WishlistBook, 'id'>>({
@@ -36,7 +38,12 @@ export default function WishlistPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/wishlist');
+      if (!user) {
+        setWishlistBooks([]);
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`/api/wishlist?user_id=${user.id}`);
       if (!response.ok) {
         throw new Error(`Error fetching wishlist: ${response.statusText}`);
       }
@@ -59,7 +66,14 @@ export default function WishlistPage() {
     setNewBook({ ...newBook, [name]: value });
   };
 
-  const handleAddBook = async () => {
+  const handleAddBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!user) {
+      setError('You must be logged in to add an item.');
+      return;
+    }
+
     // Basic validation
     if (!newBook.title || !newBook.author) {
       alert(t('titleAuthorRequired'));
@@ -72,7 +86,7 @@ export default function WishlistPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newBook),
+        body: JSON.stringify({ ...newBook, user_id: user.id }),
       });
 
       if (!response.ok) {
@@ -134,21 +148,23 @@ export default function WishlistPage() {
         <Card className="mb-8 p-4">
           <CardContent>
             <h2 className="text-xl font-semibold mb-4">{t('addNewWishlistBook')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title" className="mb-1">{t('title')}</Label>
-                <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
+            <form onSubmit={handleAddBook}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title" className="mb-1">{t('title')}</Label>
+                  <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
+                </div>
+                <div>
+                  <Label htmlFor="author" className="mb-1">{t('author')}</Label>
+                  <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                  <Label htmlFor="note" className="mb-1">{t('note')}</Label>
+                  <Textarea id="note" name="note" value={newBook.note} onChange={handleInputChange} />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="author" className="mb-1">{t('author')}</Label>
-                <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
-              </div>
-              <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="note" className="mb-1">{t('note')}</Label>
-                <Textarea id="note" name="note" value={newBook.note} onChange={handleInputChange} />
-              </div>
-            </div>
-            <Button onClick={handleAddBook} className="mt-4">{t('addBook')}</Button>
+              <Button type="submit" className="mt-4">{t('addBook')}</Button>
+            </form>
           </CardContent>
         </Card>
       )}
