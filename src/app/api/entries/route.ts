@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies as getCookies } from 'next/headers';
-import type { CookieOptions } from '@supabase/ssr';
 
 // Helper to adapt the cookies() API to the interface expected by Supabase SSR
 async function getSupabaseCookies() {
@@ -9,12 +8,6 @@ async function getSupabaseCookies() {
   return {
     get(name: string) {
       return cookieStore.get(name)?.value;
-    },
-    set(name: string, value: string, options: CookieOptions) {
-      // Not needed for API route context
-    },
-    remove(name: string, options: CookieOptions) {
-      // Not needed for API route context
     },
   };
 }
