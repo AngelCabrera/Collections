@@ -23,7 +23,7 @@ export default function WishlistItemPage() {
   useRequireAuth();
 
   const { t } = useTranslation();
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const itemId = parseInt(params.itemId as string, 10);
