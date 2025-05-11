@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Rating } from '@smastrom/react-rating' // Import the Rating component
 import '@smastrom/react-rating/style.css'
+import { useRequireAuth } from '@/contexts/useRequireAuth';
 
 // Define custom item shapes using Font Awesome icons
 const CustomStar = (
@@ -52,7 +53,8 @@ interface WishlistItem {
   note: string;
 }
 
-export default function Home() {
+export default function HomePage() {
+  useRequireAuth();
   const { t } = useTranslation();
   const [recentlyReadBooks, setRecentlyReadBooks] = useState<Entry[]>([]);
   const [wishlistBooks, setWishlistBooks] = useState<WishlistItem[]>([]);

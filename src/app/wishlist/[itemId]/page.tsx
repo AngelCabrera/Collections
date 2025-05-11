@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 import { useAuth } from '@/contexts/AuthContext';
+import { useRequireAuth } from '@/contexts/useRequireAuth';
 
 // Define interface for wishlist item data (matching the 'items' table structure)
 interface WishlistItem {
@@ -19,8 +20,10 @@ interface WishlistItem {
 }
 
 export default function WishlistItemPage() {
+  useRequireAuth();
+
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const params = useParams();
   const router = useRouter();
   const itemId = parseInt(params.itemId as string, 10);

@@ -11,6 +11,7 @@ import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 import { Rating } from '@smastrom/react-rating' // Import the Rating component
 import '@smastrom/react-rating/style.css'
 import { useAuth } from '@/contexts/AuthContext';
+import { useRequireAuth } from '@/contexts/useRequireAuth';
 
 // Define custom item shapes using Font Awesome icons
 const CustomStar = (
@@ -34,7 +35,7 @@ const CustomFire = (
 const CustomFinal = (
   <path
     xmlns="http://www.w3.org/2000/svg"
-    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0-83-31.5-156T763-197q-54-54-127-85.5T480-80Z"
   />
 );
 
@@ -95,8 +96,9 @@ interface Entry {
 
 
 export default function RecentlyReadBookPage() {
+  useRequireAuth();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const params = useParams();
   const router = useRouter();
   const bookId = parseInt(params.bookId as string, 10);
@@ -104,6 +106,12 @@ export default function RecentlyReadBookPage() {
   const [entry, setEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     const fetchEntry = async () => {

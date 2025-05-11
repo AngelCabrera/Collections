@@ -12,6 +12,8 @@ import Link from "next/link";
 import { FaTrash } from 'react-icons/fa'; // Import the trash icon
 import Breadcrumb from '@/components/breadcrumb'; // Import Breadcrumb component
 import { useAuth } from '@/contexts/AuthContext'; // Import useAuth to get the current user
+import { useRouter } from 'next/navigation'; // Import useRouter for navigation
+import { useRequireAuth } from '@/contexts/useRequireAuth'; // Import useRequireAuth hook
 
 // Define interface for wishlist book data
 interface WishlistBook {
@@ -22,8 +24,11 @@ interface WishlistBook {
 }
 
 export default function WishlistPage() {
+  useRequireAuth(); // Enforce login redirect using useRequireAuth hook
+
   const { t } = useTranslation();
-  const { user } = useAuth(); // Get the current user
+  const { user, isLoading } = useAuth(); // Get the current user and loading state
+  const router = useRouter();
   const [wishlistBooks, setWishlistBooks] = useState<WishlistBook[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<Omit<WishlistBook, 'id'>>({
@@ -33,6 +38,12 @@ export default function WishlistPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
 
   const fetchWishlist = async () => {
     setLoading(true);

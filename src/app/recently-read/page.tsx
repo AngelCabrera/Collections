@@ -21,6 +21,8 @@ import Breadcrumb from "@/components/breadcrumb"; // Import Breadcrumb component
 import { Rating } from "@smastrom/react-rating"; // Import the Rating component
 import "@smastrom/react-rating/style.css";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useRequireAuth } from "@/contexts/useRequireAuth";
 
 // Define interface for entry data (matching the 'entries' table structure)
 interface Entry {
@@ -103,7 +105,7 @@ const CustomFire = (
 const CustomFinal = (
   <path
     xmlns="http://www.w3.org/2000/svg"
-    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+    d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0-83-31.5-156T763-197q-54-54-127-85.5T480-80Z"
   />
 );
 
@@ -138,8 +140,17 @@ const finalRatingStyles = {
 };
 
 export default function RecentlyReadPage() {
+  useRequireAuth();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
   const [entries, setEntries] = useState<Entry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [newBook, setNewBook] = useState<NewBookState>({
