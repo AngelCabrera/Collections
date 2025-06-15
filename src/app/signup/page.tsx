@@ -10,6 +10,7 @@ import Link from 'next/link';
 
 export default function SignupPage() {
   const { signup } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,7 +27,7 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const { error } = await signup(email, password);
+    const { error } = await signup(email, password, name);
     setLoading(false);
     if (error) {
       setError(error);
@@ -40,6 +41,10 @@ export default function SignupPage() {
       <Card className="w-full max-w-md p-6">
         <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
+          </div>
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />

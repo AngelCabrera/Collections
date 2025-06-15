@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Rating } from '@smastrom/react-rating' // Import the Rating component
 import '@smastrom/react-rating/style.css'
 import { useRequireAuth } from '@/contexts/useRequireAuth';
+import { Input } from "@/components/ui/input";
 
 // Define custom item shapes using Font Awesome icons
 const CustomStar = (
@@ -60,15 +61,50 @@ export default function HomePage() {
   const [wishlistBooks, setWishlistBooks] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  const handleNameUpdate = async () => {
+    if (!newName.trim()) {
+      setNameError('Name cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update name');
+      }
+
+      const data = await response.json();
+      setUserName(data.name);
+      setIsEditingName(false);
+      setNewName('');
+      setNameError(null);
+    } catch (err) {
+      setNameError(err instanceof Error ? err.message : 'Failed to update name');
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const [entriesResponse, wishlistResponse] = await Promise.all([
+        const [entriesResponse, wishlistResponse, userResponse] = await Promise.all([
           fetch('/api/entries'),
-          fetch('/api/wishlist')
+          fetch('/api/wishlist'),
+          fetch('/api/user')
         ]);
 
         if (!entriesResponse.ok) {
@@ -77,14 +113,19 @@ export default function HomePage() {
         if (!wishlistResponse.ok) {
           throw new Error(`Error fetching wishlist items: ${wishlistResponse.text}`);
         }
+        if (!userResponse.ok) {
+          throw new Error(`Error fetching user data: ${userResponse.text}`);
+        }
 
-        const [entriesData, wishlistData] = await Promise.all([
+        const [entriesData, wishlistData, userData] = await Promise.all([
           entriesResponse.json(),
-          wishlistResponse.json()
+          wishlistResponse.json(),
+          userResponse.json()
         ]);
 
         setRecentlyReadBooks(entriesData);
         setWishlistBooks(wishlistData);
+        setUserName(userData.name || '');
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Error fetching data:', err);
@@ -99,7 +140,43 @@ export default function HomePage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">{t('greeting')}</h1>
+        <div className="flex items-center gap-4">
+          {isEditingName ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder={userName || 'Enter your name'}
+                className="w-48"
+              />
+              <Button onClick={handleNameUpdate} size="sm">Save</Button>
+              <Button onClick={() => {
+                setIsEditingName(false);
+                setNewName('');
+                setNameError(null);
+              }} variant="outline" size="sm">Cancel</Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold">
+                {t('greeting', {
+                  name: (
+                    <span 
+                      onClick={() => {
+                        setIsEditingName(true);
+                        setNewName(userName);
+                      }}
+                      className="cursor-pointer hover:text-primary transition-colors"
+                    >
+                      {userName}
+                    </span>
+                  )
+                })}
+              </h1>
+            </div>
+          )}
+          {nameError && <p className="text-red-500 text-sm">{nameError}</p>}
+        </div>
         <LanguageSwitcher />
       </div>
 

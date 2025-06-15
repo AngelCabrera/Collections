@@ -1,57 +1,55 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getTranslations } from './i18n';
+import enTranslations from './en.json';
+import esTranslations from './es.json';
+
+type TranslationKey = keyof typeof enTranslations;
+type TranslationParams = Record<string, string | React.ReactNode>;
 
 interface TranslationContextType {
-  locale: string;
-  setLocale: (locale: string) => void;
-  t: (key: string) => string;
+  language: 'en' | 'es';
+  setLanguage: (lang: 'en' | 'es') => void;
+  t: (key: TranslationKey, params?: TranslationParams) => React.ReactNode;
 }
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_LOCALE_KEY = 'app_locale';
 
-export const TranslationProvider = ({ children }: { children: ReactNode }) => {
-  const [locale, setLocaleState] = useState('en'); // Default to English
-  const translations = getTranslations(locale);
+export function TranslationProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState<'en' | 'es'>('en');
 
-  useEffect(() => {
-    // Check local storage first
-    const savedLocale = localStorage.getItem(LOCAL_STORAGE_LOCALE_KEY);
-    if (savedLocale) {
-      setLocaleState(savedLocale);
-    } else if (typeof navigator !== 'undefined') {
-      // Detect browser language if no saved locale
-      const browserLanguage = navigator.language.split('-')[0];
-      const supportedLocales = Object.keys(translations);
-      if (supportedLocales.includes(browserLanguage)) {
-        setLocaleState(browserLanguage);
-      }
+  const t = (key: TranslationKey, params?: TranslationParams): React.ReactNode => {
+    const translations = language === 'en' ? enTranslations : esTranslations;
+    let text = translations[key] as string;
+
+    if (params) {
+      const parts = text.split(/(\{[^}]+\})/);
+      return parts.map((part, index) => {
+        const match = part.match(/\{([^}]+)\}/);
+        if (match && params[match[1]]) {
+          return <React.Fragment key={index}>{params[match[1]]}</React.Fragment>;
+        }
+        return part;
+      });
     }
-  }, [translations]); // Run only once on mount
 
-  const setLocale = (newLocale: string) => {
-    setLocaleState(newLocale);
-    localStorage.setItem(LOCAL_STORAGE_LOCALE_KEY, newLocale);
-  };
-
-  const t = (key: string) => {
-    return translations[key as keyof typeof translations] || key;
+    return text;
   };
 
   return (
-    <TranslationContext.Provider value={{ locale, setLocale, t }}>
+    <TranslationContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </TranslationContext.Provider>
   );
-};
+}
 
-export const useTranslation = () => {
+export function useTranslation() {
   const context = useContext(TranslationContext);
   if (context === undefined) {
     throw new Error('useTranslation must be used within a TranslationProvider');
   }
   return context;
-};
+}

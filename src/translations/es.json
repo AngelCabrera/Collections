@@ -1,7 +1,7 @@
 {
   "hello": "Hola",
   "welcome": "¡Bienvenido a la aplicación!",
-  "greeting": "Hola, Patricia 👋",
+  "greeting": "Hola, {name} 👋",
   "error": "Error",
   "recentlyRead": "Leído recientemente",
   "viewAll": "Ver todo",

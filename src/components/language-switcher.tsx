@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
 export default function LanguageSwitcher() {
-  const { locale, setLocale } = useTranslation();
+  const { language, setLanguage } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
@@ -24,7 +24,7 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="flex items-center space-x-2">
-      <Select onValueChange={(value) => setLocale(value)} value={locale}>
+      <Select onValueChange={(value) => setLanguage(value as 'en' | 'es')} value={language}>
         <SelectTrigger className="w-[100px]">
           <SelectValue placeholder="Language" />
         </SelectTrigger>
@@ -41,7 +41,7 @@ export default function LanguageSwitcher() {
         {theme === "light" ? "☀️" : "🌙"}
       </Button>
       {user ? (
-        <Button variant="outline" onClick={logout} className="ml-2">Logout</Button>
+        <Button variant="outline" onClick={logout}>Logout</Button>
       ) : (
         <>
           <Link href="/login" className="ml-2"><Button variant="outline">Login</Button></Link>
