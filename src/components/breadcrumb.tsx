@@ -20,7 +20,8 @@ export default function Breadcrumb({ itemName }: BreadcrumbProps) {
         const href = '/' + pathSegments.slice(0, index + 1).join('/');
         const isLast = index === pathSegments.length - 1;
         // Use segment as key for translation
-        const translatedSegment = t(segment);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const translatedSegment = t(segment as any);
         const displayName = translatedSegment === segment ? segment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : translatedSegment; // Basic formatting or translated text
 
         return (

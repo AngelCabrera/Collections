@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
@@ -172,7 +172,7 @@ export default function RecentlyReadPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -195,11 +195,11 @@ export default function RecentlyReadPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchEntries();
-  }, []); // Fetch entries on component mount
+  }, [fetchEntries]); // Add fetchEntries to dependency array
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -282,12 +282,10 @@ export default function RecentlyReadPage() {
         review: "",
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("unknownError"));
-      console.error(t("errorAddingEntry"), err);
+      setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+      console.error(typeof t === 'function' ? String(t('errorAddingEntry')) : 'Error adding entry', err);
       alert(
-        `${t("failedToAddBook")}: ${
-          err instanceof Error ? err.message : t("unknownError")
-        }`
+        `${typeof t === 'function' ? String(t('failedToAddBook')) : 'Failed to add book'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`
       );
     }
   };
@@ -309,12 +307,10 @@ export default function RecentlyReadPage() {
       // Update state by removing the deleted entry
       setEntries(entries.filter((entry) => entry.id !== id));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("unknownError"));
-      console.error(t("errorDeletingEntry"), err);
+      setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+      console.error(typeof t === 'function' ? String(t('errorDeletingEntry')) : 'Error deleting entry', err);
       alert(
-        `${t("failedToDeleteBook")}: ${
-          err instanceof Error ? err.message : t("unknownError")
-        }`
+        `${typeof t === 'function' ? String(t('failedToDeleteBook')) : 'Failed to delete book'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`
       );
     }
   };
@@ -552,7 +548,7 @@ export default function RecentlyReadPage() {
                   name="favPhrases"
                   value={newBook.favPhrases} // Use the raw string value
                   onChange={handleInputChange} // Use the generic input handler
-                  placeholder={t("separatePhrasesWithCommas")} // Add placeholder text
+                  placeholder={String(t("separatePhrasesWithCommas"))} // Add placeholder text as string
                 />
               </div>
               <div className="col-span-1 md:col-span-2">

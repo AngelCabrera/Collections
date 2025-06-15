@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslation } from "@/translations/TranslationContext";
+import { useTranslation, type TranslationKey } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -135,8 +135,8 @@ export default function RecentlyReadBookPage() {
           setEntry(null); // Book not found
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : t('unknownError'));
-        console.error(t('errorFetchingEntry'), err);
+        setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+        console.error(typeof t === 'function' ? String(t('errorFetchingEntry')) : 'Error fetching entry', err);
       } finally {
         setLoading(false);
       }
@@ -169,9 +169,9 @@ export default function RecentlyReadBookPage() {
       router.push('/recently-read');
 
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : t('unknownError'));
-        console.error(t('errorDeletingBook'), err);
-        alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+        setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+        console.error(typeof t === 'function' ? String(t('errorDeletingBook')) : 'Error deleting book', err);
+        alert(`${typeof t === 'function' ? String(t('failedToDeleteBook')) : 'Failed to delete book'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`);
       }
     };
 
@@ -239,7 +239,7 @@ export default function RecentlyReadBookPage() {
               />
             </div>
           )}
-          {entry.formato && <p><strong>{t('format')}:</strong> {t(`format${entry.formato.charAt(0).toUpperCase()}${entry.formato.slice(1)}`)}</p>}
+          {entry.formato && <p><strong>{t('format')}:</strong> {t(`format${entry.formato.charAt(0).toUpperCase()}${entry.formato.slice(1)}` as TranslationKey)}</p>}
           {entry.page_number !== null && <p><strong>{t('pageNumber')}:</strong> {entry.page_number}</p>}
           {entry.start_date && <p><strong>{t('startDate')}:</strong> {new Date(entry.start_date).toLocaleDateString()}</p>}
           {entry.end_date && <p><strong>{t('endDate')}:</strong> {new Date(entry.end_date).toLocaleDateString()}</p>}

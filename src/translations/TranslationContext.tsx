@@ -1,11 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getTranslations } from './i18n';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import enTranslations from './en.json';
 import esTranslations from './es.json';
 
-type TranslationKey = keyof typeof enTranslations;
+export type TranslationKey = keyof typeof enTranslations;
 type TranslationParams = Record<string, string | React.ReactNode>;
 
 interface TranslationContextType {
@@ -16,14 +15,12 @@ interface TranslationContextType {
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_LOCALE_KEY = 'app_locale';
-
 export function TranslationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<'en' | 'es'>('en');
 
   const t = (key: TranslationKey, params?: TranslationParams): React.ReactNode => {
     const translations = language === 'en' ? enTranslations : esTranslations;
-    let text = translations[key] as string;
+    const text = translations[key] as string;
 
     if (params) {
       const parts = text.split(/(\{[^}]+\})/);

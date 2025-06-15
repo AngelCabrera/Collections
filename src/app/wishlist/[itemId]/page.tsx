@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTranslation } from "@/translations/TranslationContext";
+import { useTranslation, type TranslationKey } from "@/translations/TranslationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,8 +54,8 @@ export default function WishlistItemPage() {
           setItem(null); // Item not found
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : t('unknownError'));
-        console.error(t('errorFetchingWishlistItem'), err);
+        setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+        console.error(typeof t === 'function' ? String(t('errorFetchingWishlist' as TranslationKey)) : 'Error fetching wishlist', err);
       } finally {
         setLoading(false);
       }
@@ -87,10 +87,10 @@ export default function WishlistItemPage() {
       // Navigate back to the wishlist after successful deletion
       router.push('/wishlist');
 
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : t('unknownError'));
-        console.error(t('errorDeletingWishlistItem'), err);
-        alert(`${t('failedToDeleteItem')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+      console.error(typeof t === 'function' ? String(t('errorDeletingWishlistItem')) : 'Error deleting wishlist item', err);
+      alert(`${typeof t === 'function' ? String(t('failedToDeleteItem')) : 'Failed to delete item'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`);
     }
   };
 

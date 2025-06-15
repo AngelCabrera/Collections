@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/translations/TranslationContext";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export default function WishlistPage() {
     }
   }, [user, isLoading, router]);
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -66,11 +66,11 @@ export default function WishlistPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchWishlist();
-  }, []); // Fetch wishlist on component mount
+  }, [fetchWishlist]); // Add fetchWishlist to dependency array
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -115,9 +115,9 @@ export default function WishlistPage() {
         note: "",
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('unknownError'));
-      console.error(t('errorAddingWishlistItem'), err);
-      alert(`${t('failedToAddBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+      console.error(typeof t === 'function' ? String(t('errorAddingWishlistItem')) : 'Error adding wishlist item', err);
+      alert(`${typeof t === 'function' ? String(t('failedToAddBook')) : 'Failed to add book'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`);
     }
   };
 
@@ -139,9 +139,9 @@ export default function WishlistPage() {
       setWishlistBooks(wishlistBooks.filter(item => item.id !== id));
 
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('unknownError'));
-      console.error(t('errorDeletingWishlistItem'), err);
-      alert(`${t('failedToDeleteBook')}: ${err instanceof Error ? err.message : t('unknownError')}`);
+      setError(err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error');
+      console.error(typeof t === 'function' ? String(t('errorDeletingWishlistItem')) : 'Error deleting wishlist item', err);
+      alert(`${typeof t === 'function' ? String(t('failedToDeleteBook')) : 'Failed to delete book'}: ${err instanceof Error ? err.message : typeof t === 'function' ? String(t('unknownError')) : 'Unknown error'}`);
     }
   };
 
