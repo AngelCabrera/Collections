@@ -31,9 +31,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col xl:flex-row">
+    <div className="min-h-[100dvh] flex flex-col xl:flex-row">
       {/* Background Image Section */}
-      <div className="w-full xl:w-1/2 h-[50vh] xl:h-screen relative flex-1 bg-[#fbe2d2]">
+      <div className="w-full xl:w-1/2 h-[50dvh] xl:h-screen relative flex-1 bg-[#fbe2d2]">
         <div 
           className="absolute inset-0 bg-cover md:bg-contain bg-no-repeat bg-center"
           style={{ backgroundImage: 'url(/images/dooks.webp)' }}

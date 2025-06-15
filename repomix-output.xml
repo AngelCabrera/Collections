@@ -145,7 +145,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-[100dvh]">
       <Card className="w-full max-w-md p-6">
         <h2 className="text-2xl font-bold mb-4">Log In</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -206,7 +206,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-[100dvh]">
       <Card className="w-full max-w-md p-6">
         <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
