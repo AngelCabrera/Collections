@@ -31,25 +31,44 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <Card className="w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-4">Log In</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-          </div>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logging in...' : 'Log In'}</Button>
-        </form>
-        <div className="mt-4 text-sm text-center">
-          Don&apos;t have an account? <Link href="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+    <div className="min-h-screen flex flex-col xl:flex-row">
+      {/* Background Image Section */}
+      <div className="hidden xl:block xl:w-1/2 relative min-h-screen">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/images/dook.webp)' }}
+        />
+      </div>
+      
+      {/* Form Section */}
+      <div className="w-full xl:w-1/2 flex items-center justify-center p-4 relative min-h-screen">
+        {/* Mobile Background */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center xl:hidden -z-10"
+          style={{ backgroundImage: 'url(/images/dook.webp)' }}
+        >
+          <div className="absolute inset-0 bg-black/50" />
         </div>
-      </Card>
+        
+        <Card className="w-full max-w-md p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
+          <h2 className="text-2xl font-bold mb-4">Log In</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logging in...' : 'Log In'}</Button>
+          </form>
+          <div className="mt-4 text-sm text-center">
+            Don&apos;t have an account? <Link href="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

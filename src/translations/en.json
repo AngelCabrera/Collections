@@ -1,7 +1,7 @@
 {
   "hello": "Hello",
   "welcome": "Welcome to the application!",
-  "greeting": "Hi, {name} 👋",
+  "greeting": "Hi, {name} 🦆",
   "error": "Error",
   "recentlyRead": "Recently Read",
   "viewAll": "View All",
