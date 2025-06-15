@@ -56,7 +56,7 @@ export default function SignupPage() {
           <div className="absolute inset-0 bg-black/50" />
         </div>
         
-        <Card className="w-full max-w-md p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
+        <Card className="w-full max-w-md p-6 bg-white/90 dark:bg-gray-900/90">
           <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
