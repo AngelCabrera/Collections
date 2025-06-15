@@ -162,15 +162,15 @@ export default function WishlistPage() {
             <form onSubmit={handleAddBook}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title" className="mb-1">{t('title')}</Label>
+                  <Label htmlFor="title">{t('title')}</Label>
                   <Input id="title" name="title" value={newBook.title} onChange={handleInputChange} />
                 </div>
                 <div>
-                  <Label htmlFor="author" className="mb-1">{t('author')}</Label>
+                  <Label htmlFor="author">{t('author')}</Label>
                   <Input id="author" name="author" value={newBook.author} onChange={handleInputChange} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <Label htmlFor="note" className="mb-1">{t('note')}</Label>
+                  <Label htmlFor="note">{t('note')}</Label>
                   <Textarea id="note" name="note" value={newBook.note} onChange={handleInputChange} />
                 </div>
               </div>

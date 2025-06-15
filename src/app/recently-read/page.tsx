@@ -332,7 +332,7 @@ export default function RecentlyReadPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title" className="mb-1">
+                <Label htmlFor="title">
                   {t("title")}
                 </Label>
                 <Input
@@ -343,7 +343,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="author" className="mb-1">
+                <Label htmlFor="author">
                   {t("author")}
                 </Label>
                 <Input
@@ -354,7 +354,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="recommended" className="mb-1">
+                <Label htmlFor="recommended">
                   {t("recommended")}
                 </Label>
                 <input
@@ -369,7 +369,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="rating" className="mb-1">
+                <Label htmlFor="rating">
                   {t("overallRating")}
                 </Label>
                 <Rating
@@ -384,7 +384,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="formato" className="mb-1">
+                <Label htmlFor="formato">
                   {t("format")}
                 </Label>
                 <Select
@@ -404,7 +404,7 @@ export default function RecentlyReadPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="pageNumber" className="mb-1">
+                <Label htmlFor="pageNumber">
                   {t("pageNumber")}
                 </Label>
                 <Input
@@ -416,7 +416,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="startDate" className="mb-1">
+                <Label htmlFor="startDate">
                   {t("startDate")}
                 </Label>
                 <Input
@@ -428,7 +428,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="endDate" className="mb-1">
+                <Label htmlFor="endDate">
                   {t("endDate")}
                 </Label>
                 <Input
@@ -440,7 +440,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="favCharacter" className="mb-1">
+                <Label htmlFor="favCharacter">
                   {t("favoriteCharacter")}
                 </Label>
                 <Input
@@ -451,7 +451,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="hatedCharacter" className="mb-1">
+                <Label htmlFor="hatedCharacter">
                   {t("hatedCharacter")}
                 </Label>
                 <Input
@@ -462,7 +462,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="genre" className="mb-1">
+                <Label htmlFor="genre">
                   {t("genre")}
                 </Label>
                 <Input
@@ -478,7 +478,7 @@ export default function RecentlyReadPage() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="rating-romance" className="mb-1">
+                    <Label htmlFor="rating-romance">
                       {t("romance")}
                     </Label>
                     <Rating
@@ -493,7 +493,7 @@ export default function RecentlyReadPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="rating-sadness" className="mb-1">
+                    <Label htmlFor="rating-sadness">
                       {t("sadness")}
                     </Label>
                     <Rating
@@ -508,7 +508,7 @@ export default function RecentlyReadPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="rating-spicy" className="mb-1">
+                    <Label htmlFor="rating-spicy">
                       {t("spicy")}
                     </Label>
                     <Rating
@@ -523,7 +523,7 @@ export default function RecentlyReadPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="rating-final" className="mb-1">
+                    <Label htmlFor="rating-final">
                       {t("final")}
                     </Label>
                     <Rating
@@ -540,7 +540,7 @@ export default function RecentlyReadPage() {
                 </div>
               </div>
               <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="favPhrases" className="mb-1">
+                <Label htmlFor="favPhrases">
                   {t("favoritePhrases")}
                 </Label>
                 <Input
@@ -552,7 +552,7 @@ export default function RecentlyReadPage() {
                 />
               </div>
               <div className="col-span-1 md:col-span-2">
-                <Label htmlFor="review" className="mb-1">
+                <Label htmlFor="review">
                   {t("review")}
                 </Label>
                 <Textarea
